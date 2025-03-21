@@ -15,8 +15,8 @@
         <!-- Status bar color. -->
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
         <!-- Radio buttons. -->
-        <item name="radioButtonStyle">@style/Widget.MapMarker.CompoundButton.RadioButton</item>
+        <item name="radioButtonStyle">@style/Widget.MapApp.CompoundButton.RadioButton</item>
         <!-- Text appearance style. -->
-        <item name="textAppearanceSubtitle1">@style/TextAppearance.MapMarker.Subtitle1</item>
+        <item name="textAppearanceSubtitle1">@style/TextAppearance.MapApp.Subtitle1</item>
     </style>
 </resources>
