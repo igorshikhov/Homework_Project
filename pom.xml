@@ -1,0 +1,13 @@
+<repositories>
+    <repository>
+        <id>repo</id>
+        <releases>
+            <enabled>true</enabled>
+            <checksumPolicy>ignore</checksumPolicy>
+        </releases>
+        <snapshots>
+            <enabled>false</enabled>
+        </snapshots>
+        <url>file://${basedir}/repository</url>
+    </repository>
+</repositories

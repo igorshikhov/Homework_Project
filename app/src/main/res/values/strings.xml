@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+     Copyright (C) 2020 The Android Open Source Project
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+
+          http://www.apache.org/licenses/LICENSE-2.0
+
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+<resources>
+    <string name="app_name">Объекты на карте</string>
+    <string name="map_view">Карта</string>
+    <string name="map_mode">Режим карты</string>
+    <string name="map_style">Стиль карты</string>
+    <string name="map_scale">Масштаб</string>
+    <string name="nothing">Ничего нет...</string>
+    <string name="append">Добавить</string>
+    <string name="cancel">Отмена</string>
+    <string name="filter">Фильтр</string>
+    <string name="select">Выбрать</string>
+    <string name="change">Изменить</string>
+    <string name="refresh">Обновить</string>
+    <string name="radius">Радиус поиска</string>
+    <string name="quantity">Количество</string>
+    <string name="settings">Настройки</string>
+    <string name="selection">Выборка</string>
+    <string name="item_list">Список</string>
+    <string name="find_item">Найти</string>
+    <string name="item_id">ID:</string>
+    <string name="item_name">Название:</string>
+    <string name="item_address">Адрес:</string>
+    <string name="item_detail">Данные:</string>
+    <string name="item_status">Статус:</string>
+    <string name="item_group">Категория:</string>
+    <string name="item_place">Координаты:</string>
+    <string name="view_mode">Просмотр</string>
+    <string name="edit_mode">Изменение</string>
+    <string name="save_data">Сохранить</string>
+    <string name="map_main">Main</string>
+    <string name="map_dark">Dark</string>
+    <string name="map_simple">Light</string>
+    <string name="provider_gps">GPS</string>
+    <string name="provider_network">Network</string>
+    <string name="check_location">Определять положение</string>
+    <string name="query_settings">Запрос данных</string>
+    <string name="clear_changed">Удалить предыдущие данные</string>
+</resources>

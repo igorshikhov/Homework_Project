@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <domain-config>
+        <domain includeSubdomains="true">demo.maps.vk.com</domain>
+        <domain includeSubdomains="true">maps.vk.com</domain>
+        <domain includeSubdomains="true">maps.mail.ru</domain>
+        <trust-anchors>
+            <certificates src="@raw/maps_vk_com" />
+        </trust-anchors>
+    </domain-config>
+    <base-config>
+        <trust-anchors>
+            <certificates src="@raw/maps_vk_com_chain" />
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>
