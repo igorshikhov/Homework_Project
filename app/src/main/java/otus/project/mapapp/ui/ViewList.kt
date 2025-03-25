@@ -81,8 +81,5 @@ fun ViewList(getList : () -> List<Item>, back : () -> Unit, toMap : () -> Unit, 
 @Preview(apiLevel = 34)
 @Composable
 fun ViewListPreview() {
-    val ilist = listOf(
-        Item(1, "объект 1", "данные 1", "адрес 1")
-    )
-    ViewList({ listOf() }, {}, {}, {}, {})
+    ViewList({ listOf(Item(1, "объект 1", "данные 1", "адрес 1")) }, {}, {}, {}, {})
 }

@@ -11,6 +11,7 @@ import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import dagger.hilt.android.qualifiers.ApplicationContext
 
 /*
 CREATE TABLE categories (

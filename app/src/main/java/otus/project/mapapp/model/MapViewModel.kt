@@ -3,16 +3,25 @@ package otus.project.mapapp.model
 import android.content.Context
 import android.graphics.Bitmap
 import androidx.lifecycle.ViewModel
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import otus.project.mapapp.db.MarkerStore
 import otus.project.mapapp.map.CheckLocation
 import otus.project.mapapp.net.NetClient
 import otus.project.mapapp.net.PlaceData
+import javax.inject.Inject
 
 enum class ViewType { TypeAny, TypeList, TypeMap }
 enum class ViewMode { ModeView, ModeEdit }
 enum class MapStyle { Main, Dark, Light }
 
-class MapViewModel(private val ctx : Context, private val store : MarkerStore) : ViewModel() {
+class MapViewModel(private val ctx : Context) : ViewModel() {
+/*
+@HiltViewModel
+class MapViewModel @Inject constructor (@ApplicationContext private val ctx : Context) : ViewModel() {
+*/
+    private val store : MarkerStore by lazy { MarkerStore(ctx) }
+    //@Inject lateinit var store : MarkerStore
 
     companion object {
         var currentViewType : ViewType = ViewType.TypeAny
@@ -68,7 +77,7 @@ class MapViewModel(private val ctx : Context, private val store : MarkerStore) :
     }
 
     fun getPlace(objId : Long) : Place {
-        initData()
+        //initData()
         var place = mplace.get(objId)
         if (place == null) {
             if (useSourceDb) {

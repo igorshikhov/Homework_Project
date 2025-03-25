@@ -38,7 +38,7 @@ fun mapFixed() : Painter {
 @Composable
 fun mapImage(getImage : (Int, Int) -> Bitmap?) : Bitmap? {
     Box { CircularProgressIndicator() }
-    return getImage(576, 1000)
+    return getImage(560, 1040)
 }
 
 @Composable
@@ -95,13 +95,13 @@ fun ViewMap(getImage : (Int, Int) -> Bitmap?, back : () -> Unit, toList : () -> 
                 zoomIn = {
                     if (MapViewModel.currentZoom < 17) {
                         ++MapViewModel.currentZoom
-                        bitmap.value = getImage(576, 1000)
+                        bitmap.value = getImage(560, 1040)
                     }
                 },
                 zoomOut = {
                     if (MapViewModel.currentZoom > 1) {
                         --MapViewModel.currentZoom
-                        bitmap.value = getImage(576, 1000)
+                        bitmap.value = getImage(560, 1040)
                     }
                 }
             )

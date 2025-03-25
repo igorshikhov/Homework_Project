@@ -2,33 +2,24 @@ package otus.project.mapapp.db
 
 import android.content.Context
 import android.widget.Toast
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import otus.project.mapapp.model.Item
 import otus.project.mapapp.model.Place
 import javax.inject.Inject
-/*
-class MarkerStore @Inject constructor(@ApplicationContext private val ctx : Context) {
 
-    @Inject lateinit var db : MarkerDatabase
-
-    private val dao : MarkerDao = db.getDao()
-*/
 class MarkerStore (private val ctx : Context) {
 
-    companion object {
-        private lateinit var context: Context
-        private val db: MarkerDatabase by lazy { provideDatabase(context) }
+//class MarkerStore @Inject constructor(@ApplicationContext private val ctx : Context) {
 
-        fun getDao (ctx : Context) : MarkerDao {
-            context = ctx
-            return db.getDao()
-        }
-    }
+    //@Inject lateinit var db : MarkerDatabase
 
-    private val dao : MarkerDao = getDao(ctx)
-/* */
+    private val db: MarkerDatabase by lazy { provideDatabase(ctx) }
+
+    private val dao : MarkerDao by lazy { db.getDao() }
+
     fun addItem(item : Item, place : Place) {
         var err : String? = null
         CoroutineScope(Dispatchers.IO).launch {
