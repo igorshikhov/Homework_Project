@@ -1,2 +1,14 @@
-include ':app'
 rootProject.name = "MapApp"
+
+dependencyResolutionManagement {
+    repositories {
+        mavenLocal()
+        jcenter()
+        google()
+    }
+}
+
+include ":app"
+//include ":feature:map"
+//include ":feature:net"
+//include ":feature:db"

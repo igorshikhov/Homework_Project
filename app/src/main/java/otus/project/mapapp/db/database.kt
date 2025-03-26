@@ -11,7 +11,6 @@ import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import dagger.hilt.android.qualifiers.ApplicationContext
 
 /*
 CREATE TABLE categories (
@@ -34,7 +33,6 @@ CREATE TABLE markers (
     FOREIGN KEY (objid) REFERENCES objects(id)
 );
  */
-const val MAPAPP_DATABASE = "mapapp.db"
 
 // Categories
 @Entity(tableName = "categories",
@@ -155,6 +153,8 @@ interface MarkerDao {
 abstract class MarkerDatabase : RoomDatabase() {
     abstract fun getDao() : MarkerDao
 }
+
+private const val MAPAPP_DATABASE = "mapapp.db"
 
 fun provideDatabase(context: Context) : MarkerDatabase {
     return Room.databaseBuilder(context, MarkerDatabase::class.java, MAPAPP_DATABASE)

@@ -36,4 +36,5 @@
     <string name="check_location">Определять положение</string>
     <string name="query_settings">Запрос данных</string>
     <string name="clear_changed">Удалить предыдущие данные</string>
+    <string name="use_database">Использовать базу данных</string>
 </resources>

@@ -8,6 +8,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import otus.project.mapapp.model.Place
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -40,34 +41,23 @@ object NetClient {
     }
     private val service : DataService by lazy { retrofit.create(DataService::class.java) }
 
-    fun getDataAsync(filter : String, count : Int, center : Place, radius : Int, ctx: Context) : List<PlaceData> {
-        var err: String? = null
-        var lst: List<PlaceData> = listOf()
-        runBlocking(Dispatchers.IO) {
-            launch {
-                try {
-                    val place: String = "${center.latitude},${center.longitude}"
-                    val response =
-                        service.getPlaces(place, "$radius", "$count", filter, fieldset, apikey)
-                    lst = response.results
-                }
-                catch (t: Throwable) {
-                    err = t.message ?: "unknown error"
-                }
-            }
+    suspend fun getDataAsync(filter : String, count : Int, center : Place, radius : Int, ctx: Context) : List<PlaceData> {
+        try {
+            val response =
+                service.getPlaces("${center.latitude},${center.longitude}", "$radius", "$count", filter, fieldset, apikey)
+            return response.results
         }
-
-        if (err != null) {
-            Toast.makeText(ctx, err, Toast.LENGTH_LONG).show()
+        catch (t: Throwable) {
+            Toast.makeText(ctx,t.message ?: "unknown error", Toast.LENGTH_LONG).show()
         }
-        return lst
+        return listOf()
     }
 
 //------
 
     // pins=55.75,37.61,blue_star|60.65,38.12,red_info
-    private const val pin_default = "blue" // "purple"
-    private const val pin_central = "pink" // "violet"
+    private const val pin_default = "blue" // or "purple"
+    private const val pin_central = "pink" // or "violet"
     private const val MAP_URL = "https://demo.maps.vk.com/api/staticmap/png"
 
     fun getImageUrl(center : Place, zoom : Int, style : String, width : Int, height : Int, pins : Map<Long, Place> = mapOf(), selected : Long = 0) : String {
@@ -86,21 +76,12 @@ object NetClient {
     }
 
     fun getBitmapAsync(url : String, ctx : Context) : Bitmap? {
-        var err : String? = null
-        var bmp : Bitmap? = null
-        runBlocking(Dispatchers.IO) {
-            launch {
-                try {
-                    bmp = Picasso.get().load(url).get()
-                }
-                catch (t: Throwable) {
-                    err = t.message ?: "unknown error"
-                }
-            }
+        try {
+            return Picasso.get().load(url).get()
         }
-        if (err != null) {
-            Toast.makeText(ctx, err, Toast.LENGTH_LONG).show()
+        catch (t: Throwable) {
+            Toast.makeText(ctx, t.message ?: "unknown error", Toast.LENGTH_LONG).show()
         }
-        return bmp
+        return null
     }
 }

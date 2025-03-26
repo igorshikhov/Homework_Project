@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -30,15 +31,18 @@ import otus.project.mapapp.model.MapViewModel
 import otus.project.mapapp.model.Place
 import otus.project.mapapp.model.ViewType
 
+private const val iWidth = 576
+private const val iHeight = 1000
+
 @Composable
 fun mapFixed() : Painter {
-    return painterResource(id = R.drawable.map512)
+    return painterResource(id = R.drawable.map800)
 }
 
 @Composable
 fun mapImage(getImage : (Int, Int) -> Bitmap?) : Bitmap? {
-    Box { CircularProgressIndicator() }
-    return getImage(560, 1040)
+    Box { CircularProgressIndicator(color = colorResource(id = R.color.medium_purple)) }
+    return getImage(iWidth, iHeight)
 }
 
 @Composable
@@ -95,13 +99,13 @@ fun ViewMap(getImage : (Int, Int) -> Bitmap?, back : () -> Unit, toList : () -> 
                 zoomIn = {
                     if (MapViewModel.currentZoom < 17) {
                         ++MapViewModel.currentZoom
-                        bitmap.value = getImage(560, 1040)
+                        bitmap.value = getImage(iWidth, iHeight)
                     }
                 },
                 zoomOut = {
                     if (MapViewModel.currentZoom > 1) {
                         --MapViewModel.currentZoom
-                        bitmap.value = getImage(560, 1040)
+                        bitmap.value = getImage(iWidth, iHeight)
                     }
                 }
             )

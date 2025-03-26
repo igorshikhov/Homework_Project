@@ -3,28 +3,21 @@ package otus.project.mapapp.db
 import android.content.Context
 import android.widget.Toast
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import otus.project.mapapp.model.Item
 import otus.project.mapapp.model.Place
 import javax.inject.Inject
 
-class MarkerStore (private val ctx : Context) {
-
-//class MarkerStore @Inject constructor(@ApplicationContext private val ctx : Context) {
-
-    //@Inject lateinit var db : MarkerDatabase
+class MarkerStore @Inject constructor(@ApplicationContext private val ctx : Context) {
 
     private val db: MarkerDatabase by lazy { provideDatabase(ctx) }
-
     private val dao : MarkerDao by lazy { db.getDao() }
 
-    fun addItem(item : Item, place : Place) {
-        var err : String? = null
-        CoroutineScope(Dispatchers.IO).launch {
+    suspend fun addItem(item : Item, place : Place) {
+        withContext(Dispatchers.IO) {
             try {
-                val cats : List<Long> = dao.getCategoryId(item.category)
+                val cats: List<Long> = dao.getCategoryId(item.category)
                 dao.addObject(
                     ObjectData(
                         id = item.id,
@@ -32,28 +25,26 @@ class MarkerStore (private val ctx : Context) {
                         info = item.details,
                         address = item.address,
                         catid = if (cats.isEmpty()) null else cats.first()
-                    ))
+                    )
+                )
                 dao.addMarker(
                     MarkerData(
                         id = 0,
                         latitude = place.latitude,
                         longitude = place.longitude,
                         objid = item.id
-                    ))
+                    )
+                )
             }
-            catch(t : Throwable) {
-                err = t.message ?: "unknown error"
+            catch (t: Throwable) {
+                Toast.makeText(ctx, t.message ?: "unknown error", Toast.LENGTH_LONG).show()
             }
-        }
-        err?.let {
-            Toast.makeText(ctx, err, Toast.LENGTH_LONG).show()
         }
     }
 
-    fun getItems() : List<Item> {
-        var err : String? = null
+    suspend fun getItems() : List<Item> {
         val items: MutableList<Item> = mutableListOf()
-        CoroutineScope(Dispatchers.IO).launch {
+        withContext(Dispatchers.IO) {
             try {
                 val data: List<ObjectData> = dao.getObjects()
                 data.forEach {
@@ -66,34 +57,27 @@ class MarkerStore (private val ctx : Context) {
                     items.add(Item(it.id, it.name, it.info, it.address, cat))
                 }
             }
-            catch(t : Throwable) {
-                err = t.message ?: "unknown error"
+            catch (t: Throwable) {
+                Toast.makeText(ctx, t.message ?: "unknown error", Toast.LENGTH_LONG).show()
             }
-        }
-        err?.let {
-            Toast.makeText(ctx, err, Toast.LENGTH_LONG).show()
         }
         return items.toList()
     }
 
-    fun getPlace(objId : Long) : Place {
+    suspend fun getPlace(objId : Long) : Place {
         val place = Place()
-        var err : String? = null
-        CoroutineScope(Dispatchers.IO).launch {
+        withContext(Dispatchers.IO) {
             try {
                 val marks: List<MarkerData> = dao.getMarker(objId)
                 if (marks.isNotEmpty()) {
-                    val mark : MarkerData = marks.first()
+                    val mark: MarkerData = marks.first()
                     place.latitude = mark.latitude
                     place.longitude = mark.longitude
                 }
             }
-            catch(t : Throwable) {
-                err = t.message ?: "unknown error"
+            catch (t: Throwable) {
+                Toast.makeText(ctx, t.message ?: "unknown error", Toast.LENGTH_LONG).show()
             }
-        }
-        err?.let {
-            Toast.makeText(ctx, err, Toast.LENGTH_LONG).show()
         }
         return place
     }

@@ -9,7 +9,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import otus.project.mapapp.db.MarkerDatabase
 import otus.project.mapapp.db.provideDatabase
 import javax.inject.Singleton
-
+/*
 @Module
 @InstallIn(ActivityComponent::class)
 object ActivityModule {
@@ -26,4 +26,4 @@ object ActivityModule {
 //        return MarkerStore(context)
 //    }
 }
-
+*/

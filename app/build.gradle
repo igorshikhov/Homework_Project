@@ -1,21 +1,23 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-    id 'org.jetbrains.kotlin.kapt'
     id 'com.google.dagger.hilt.android'
     id 'com.google.devtools.ksp'
 }
 
 android {
+    namespace 'otus.project.mapapp'
+
     compileSdk 34
 
     defaultConfig {
         applicationId "otus.project.mapapp"
-        minSdkVersion 30
+        minSdkVersion 31
         targetSdkVersion 34
         versionCode 1
         versionName "1.0"
         vectorDrawables.useSupportLibrary true
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     ksp {
@@ -47,8 +49,6 @@ android {
     kotlinOptions {
         jvmTarget = '17'
     }
-
-    namespace 'otus.project.mapapp'
 }
 
 kotlin {
@@ -61,14 +61,7 @@ java {
     }
 }
 
-kapt {
-    correctErrorTypes true
-}
-
 dependencies {
-    implementation 'com.google.firebase:firebase-crashlytics-buildtools:3.0.3'
-    implementation 'androidx.test:monitor:1.7.2'
-    implementation 'androidx.test.ext:junit-ktx:1.2.1'
     def maps_version = "1.1.33"
     def hilt_version = "2.53.1"
     def room_version = "2.6.1"
@@ -100,12 +93,21 @@ dependencies {
     ksp "androidx.room:room-compiler:$room_version"
     implementation "com.google.android.material:material:1.12.0"
     implementation "com.google.dagger:hilt-android:$hilt_version"
-    kapt "com.google.dagger:hilt-android-compiler:$hilt_version"
+    ksp "com.google.dagger:hilt-android-compiler:$hilt_version"
+    implementation 'com.google.firebase:firebase-crashlytics-buildtools:3.0.3'
 //    implementation "com.squareup.okhttp3:okhttp:4.10.0"
 //    implementation "com.squareup.okhttp3:okhttp-tlv:4.10.0"
 //    implementation "com.squareup.okhttp3:logging-interceptor:4.10.0"
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.11.0'
     implementation 'com.squareup.picasso:picasso:2.71828'
-    implementation "org.jetbrains.kotlin:kotlin-stdlib:1.9.23"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+
+    testImplementation 'junit:junit:4.+'
+    androidTestImplementation 'androidx.test.ext:junit:1.2.1'
+    androidTestImplementation 'androidx.test.ext:junit-ktx:1.2.1'
+
+//    implementation(project(":feature:map"))
+//    implementation(project(":feature:net"))
+//    implementation(project(":feature:db"))
 }

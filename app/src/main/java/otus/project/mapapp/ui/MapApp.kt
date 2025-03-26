@@ -12,7 +12,7 @@ import otus.project.mapapp.model.MapViewModel
 import otus.project.mapapp.model.ViewMode
 import otus.project.mapapp.model.ViewType
 
-// Screen's Labels
+// Screen Labels
 data object Preface  { val id = "Preface" }
 data object MapMode  { val id = "MapMode" }
 data object ItemMap  { val id = "MapView" }

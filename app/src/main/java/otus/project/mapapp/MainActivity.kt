@@ -1,47 +1,46 @@
 
 package otus.project.mapapp
 
+import android.os.Build
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatActivity
 import dagger.hilt.android.AndroidEntryPoint
-import otus.project.mapapp.map.CheckLocation
 import otus.project.mapapp.model.MapViewModel
 import otus.project.mapapp.ui.MapApp
-import javax.inject.Inject
 
 /**
  * Activity for application flow.
  */
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
 
-    //private val viewModel : MapViewModel by viewModels()
-
-    private val viewModel : MapViewModel by lazy { MapViewModel(applicationContext) }
+    //private val viewModel : MapViewModel by lazy { MapViewModel(applicationContext) }
+    private val viewModel : MapViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        CheckLocation.create(applicationContext)
         setContent {
             MapApp(viewModel, { this.setTitle(it) }, { this.finish() })
         }
     }
-/* */
+
+    @RequiresApi(Build.VERSION_CODES.S)
     override fun onResume() {
         super.onResume()
-        if (CheckLocation.isEnabled()) {
-            CheckLocation.resume()
+        if (viewModel.check.isEnabled()) {
+            viewModel.check.resume()
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.S)
     override fun onPause() {
         super.onPause()
-        if (CheckLocation.isEnabled()) {
-            CheckLocation.pause()
+        if (viewModel.check.isEnabled()) {
+            viewModel.check.pause()
         }
     }
-/* */
 }
 

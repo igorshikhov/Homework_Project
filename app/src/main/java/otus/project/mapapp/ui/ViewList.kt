@@ -17,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -41,7 +42,7 @@ fun ItemLine(item : Item, onClick: () -> Unit, modifier : Modifier = Modifier) {
 
 @Composable
 fun itemList(getList : () -> List<Item>) : List<Item> {
-    Box { CircularProgressIndicator() }
+    Box { CircularProgressIndicator(color = colorResource(id = R.color.medium_purple)) }
     return getList()
 }
 

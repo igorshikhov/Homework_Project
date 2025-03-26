@@ -2,9 +2,17 @@ package otus.project.mapapp.model
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import otus.project.mapapp.db.MarkerStore
 import otus.project.mapapp.map.CheckLocation
 import otus.project.mapapp.net.NetClient
@@ -15,13 +23,14 @@ enum class ViewType { TypeAny, TypeList, TypeMap }
 enum class ViewMode { ModeView, ModeEdit }
 enum class MapStyle { Main, Dark, Light }
 
-class MapViewModel(private val ctx : Context) : ViewModel() {
-/*
+//class MapViewModel(private val ctx : Context) : ViewModel() {
+
 @HiltViewModel
 class MapViewModel @Inject constructor (@ApplicationContext private val ctx : Context) : ViewModel() {
-*/
-    private val store : MarkerStore by lazy { MarkerStore(ctx) }
-    //@Inject lateinit var store : MarkerStore
+
+    //private val store : MarkerStore by lazy { MarkerStore(ctx) }
+    @Inject lateinit var store : MarkerStore
+    @Inject lateinit var check : CheckLocation
 
     companion object {
         var currentViewType : ViewType = ViewType.TypeAny
@@ -36,9 +45,8 @@ class MapViewModel @Inject constructor (@ApplicationContext private val ctx : Co
         var currentZoom : Int = 12
         var resetOnChange : Boolean = true
         var checkLocation : Boolean = false
-
+        var useSourceDb : Boolean = false
         val useSourceNet : Boolean = true
-        val useSourceDb : Boolean = false
 
         private fun currentMapStyle() : String {
             return when (currentStyle) {
@@ -81,7 +89,9 @@ class MapViewModel @Inject constructor (@ApplicationContext private val ctx : Co
         var place = mplace.get(objId)
         if (place == null) {
             if (useSourceDb) {
-                place = store.getPlace(objId)
+                viewModelScope.launch {
+                    place = store.getPlace(objId)
+                }
             }
         }
         return place ?: Place()
@@ -106,19 +116,11 @@ class MapViewModel @Inject constructor (@ApplicationContext private val ctx : Co
         _items.add(item)
         _place.put(item.id, place)
         if (useSourceDb) {
-            store.addItem(item, place)
+            viewModelScope.launch {
+                store.addItem(item, place)
+            }
         }
         return item.id
-    }
-
-    private fun dataFromDb() {
-        _items.addAll(store.getItems())
-        for (item in mitems) {
-             _place.put(item.id, store.getPlace(item.id))
-        }
-        if (mitems.isNotEmpty()) {
-            lastId = mitems.maxOf { it.id }
-        }
     }
 
     private fun initData() {
@@ -127,25 +129,76 @@ class MapViewModel @Inject constructor (@ApplicationContext private val ctx : Co
                 dataFromDb()
             }
             if (useSourceNet) {
-                val results : List<PlaceData> = NetClient.getDataAsync(currentFilter, currentLimit, currentCenter, currentRadius, ctx)
-                for (r in results) {
-                    addItem(
-                        Item(name = r.name ?: "", details = r.place_details ?: "", address = r.address ?: "", category = r.type ?: ""),
-                        Place(r.pin[1], r.pin[0])
-                    )
+                dataFromNet()
+            }
+        }
+    }
+
+    private fun dataFromDb() {
+        viewModelScope.launch {
+            _items.addAll(store.getItems())
+            for (item in mitems) {
+                _place.put(item.id, store.getPlace(item.id))
+            }
+        }
+        if (mitems.isNotEmpty()) {
+            lastId = mitems.maxOf { it.id }
+        }
+    }
+
+    private fun dataFromNet() {
+        viewModelScope.launch {
+            val data: Deferred<List<PlaceData>> = async {
+                NetClient.getDataAsync(
+                    currentFilter,
+                    currentLimit,
+                    currentCenter,
+                    currentRadius,
+                    ctx
+                )
+            }
+            val results = data.await()
+            for (r in results) {
+                val item = Item(
+                        id = newId(),
+                        name = r.name ?: "",
+                        details = r.place_details ?: "",
+                        address = r.address ?: "",
+                        category = r.type ?: ""
+                )
+                val place = Place(r.pin[1], r.pin[0])
+                _items.add(item)
+                _place.put(item.id, place)
+                if (useSourceDb) {
+                    store.addItem(item, place)
                 }
             }
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.S)
     fun getMapImage(width : Int, height : Int) : Bitmap? {
         initData()
         if (checkLocation) {
-            if (CheckLocation.isLocationFound()) {
-                currentCenter = CheckLocation.getLocation()
+            if (check.isLocationFound()) {
+                currentCenter = check.getLocation()
             }
         }
-        val url = NetClient.getImageUrl(currentCenter, currentZoom, currentMapStyle(), width, height, mplace, currentSelected)
-        return NetClient.getBitmapAsync(url, ctx)
+        var bmp : Bitmap? = null
+        runBlocking(Dispatchers.IO) {
+            launch {
+                val url = NetClient.getImageUrl(
+                    currentCenter,
+                    currentZoom,
+                    currentMapStyle(),
+                    width,
+                    height,
+                    mplace,
+                    currentSelected
+                )
+                bmp = NetClient.getBitmapAsync(url, ctx)
+            }
+        }
+        return bmp
     }
 }

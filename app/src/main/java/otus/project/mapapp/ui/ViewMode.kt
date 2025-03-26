@@ -47,6 +47,8 @@ fun Select(name : String, selected : Boolean, onClick : () -> Unit, modifier : M
 fun ViewMode(back : (ViewType) -> Unit, resetModel : () -> Unit) {
     val space = dimensionResource(id = R.dimen.item_padding)
     var clearData = remember { mutableStateOf(MapViewModel.resetOnChange) }
+    var checkLoc = remember { mutableStateOf(MapViewModel.checkLocation) }
+    var useDb = remember { mutableStateOf(MapViewModel.useSourceDb) }
     var limit = remember { mutableStateOf(MapViewModel.currentLimit) }
     var radius = remember { mutableStateOf(MapViewModel.currentRadius) }
     var filter = remember { mutableStateOf(MapViewModel.currentFilter) }
@@ -161,6 +163,35 @@ fun ViewMode(back : (ViewType) -> Unit, resetModel : () -> Unit) {
             }
             HorizontalDivider()
 
+            Row(horizontalArrangement = Arrangement.End,
+                modifier = Modifier.fillMaxWidth(1f)
+            ) {
+                Text(text = stringResource(id = R.string.use_database),
+                    fontSize = 18.sp,
+                    modifier = Modifier.align(Alignment.CenterVertically).padding(space)
+                )
+                Switch(checked = useDb.value,
+                    onCheckedChange = { useDb.value = it },
+                    modifier = Modifier.padding(space),
+                    enabled = true
+                )
+            }
+
+            Row(horizontalArrangement = Arrangement.End,
+                modifier = Modifier.fillMaxWidth(1f)
+            ) {
+                Text(text = stringResource(id = R.string.check_location),
+                    fontSize = 18.sp,
+                    modifier = Modifier.align(Alignment.CenterVertically).padding(space)
+                )
+                Switch(checked = checkLoc.value,
+                    onCheckedChange = { checkLoc.value = it },
+                    modifier = Modifier.padding(space),
+                    enabled = true
+                )
+            }
+            HorizontalDivider()
+
             Spacer(modifier = Modifier.weight(0.5f))
 
             ToolBar(
@@ -180,6 +211,8 @@ fun ViewMode(back : (ViewType) -> Unit, resetModel : () -> Unit) {
                     }
                     MapViewModel.currentStyle = selectedStyle
                     MapViewModel.currentViewMode = selectedMode
+                    MapViewModel.checkLocation = checkLoc.value
+                    MapViewModel.useSourceDb = useDb.value
                 }
             )
         }
