@@ -57,7 +57,6 @@ class ExampleInstrumentedTest {
 
     @Test
     fun testNetClient() {
-        val ctx = InstrumentationRegistry.getInstrumentation().context
         val center = Place(55.75f,37.62f)
         val url = NetClient.getImageUrl(center, 12, "main", 512, 512)
         var err : String? = null
@@ -68,7 +67,6 @@ class ExampleInstrumentedTest {
 
     @Test
     fun testNetClientData() {
-        val ctx = InstrumentationRegistry.getInstrumentation().context
         val center = Place(55.75f,37.62f)
         val filter = "monument"
         var idata : PlaceData? = null

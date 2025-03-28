@@ -21,33 +21,30 @@ data object ItemList { val id = "ItemList" }
 data object ItemInfo { val id = "ItemInfo" }
 
 @Composable
-fun MapApp(viewModel: MapViewModel, setTitle : (String) -> Unit, finish : () -> Unit) {
+fun MapApp(viewModel: MapViewModel, finish : () -> Unit) {
     val navController : NavHostController = rememberNavController()
 
     NavHost(navController = navController, startDestination = Preface.id) {
         composable(Preface.id) {
-            setTitle(stringResource(R.string.app_name))
-            ViewStart(
-                { finish() },
-                { navController.navigate(if (it == ViewType.TypeList) ItemList.id else ItemMap.id) },
-                { navController.navigate(MapMode.id) }
+            StartScreen(
+                back = { finish() },
+                turnView = { navController.navigate(if (it == ViewType.TypeList) ItemList.id else ItemMap.id) },
+                turnMode = { navController.navigate(MapMode.id) }
             )	// done, view, mode
         }
         composable(MapMode.id) {
-            setTitle(stringResource(R.string.settings))
-            ViewMode(
-                { navController.navigate(if (it == ViewType.TypeList) ItemList.id else if (it == ViewType.TypeMap) ItemMap.id else Preface.id) },
-                { viewModel.clearData() }
+            SetupScreen(
+                back = { navController.navigate(if (it == ViewType.TypeList) ItemList.id else if (it == ViewType.TypeMap) ItemMap.id else Preface.id) },
+                resetModel = { viewModel.clearData() }
             )  // back, clear
         }
         composable(ItemMap.id) {
-            setTitle(stringResource(R.string.map_view) + " (${MapViewModel.currentFilter})")
-            ViewMap(
-                { w, h -> viewModel.getMapImage(w, h) },
-                { navController.navigate(Preface.id) },
-                { navController.navigate(ItemList.id) },
-                { navController.navigate(MapMode.id) },
-                { MapViewModel.currentPlace = it
+            MapScreen(
+                getImage = { w, h -> viewModel.getMapImage(w, h) },
+                back = { navController.navigate(Preface.id) },
+                toList = { navController.navigate(ItemList.id) },
+                toSetup = { navController.navigate(MapMode.id) },
+                onClick = { MapViewModel.currentPlace = it
                   MapViewModel.currentSelected = viewModel.findIdByPlace(it)
                   navController.navigate(if (MapViewModel.currentViewMode == ViewMode.ModeView) ItemInfo.id else ItemEdit.id)
                 } /*,
@@ -55,30 +52,27 @@ fun MapApp(viewModel: MapViewModel, setTitle : (String) -> Unit, finish : () -> 
             )	// back, view (list), refresh, info/edit
         }
         composable(ItemList.id) {
-            setTitle(stringResource(R.string.item_list) + " (${MapViewModel.currentFilter})")
-            ViewList(
-                { viewModel.getItems() },
-                { navController.navigate(Preface.id) },
-                { navController.navigate(ItemMap.id) },
-                { navController.navigate(MapMode.id) },
-                { MapViewModel.currentSelected = it
+            ListScreen(
+                getList = { viewModel.getItems() },
+                back = { navController.navigate(Preface.id) },
+                toMap = { navController.navigate(ItemMap.id) },
+                toSetup = { navController.navigate(MapMode.id) },
+                onClick = { MapViewModel.currentSelected = it
                   MapViewModel.currentPlace = viewModel.getPlace(it)
                   navController.navigate(ItemInfo.id)
                 }
             )	// back, view (map), info
         }
         composable(ItemInfo.id) {
-            setTitle(stringResource(R.string.view_mode))
-            ViewInfo(
-                viewModel.getItem(MapViewModel.currentSelected),
-                { navController.navigate(if (it == ViewType.TypeList) ItemList.id else ItemMap.id) }
+            ItemInfoScreen(
+                item = viewModel.getItem(MapViewModel.currentSelected),
+                back = { navController.navigate(if (it == ViewType.TypeList) ItemList.id else ItemMap.id) }
             )	// back, view (map)
         }
         composable(ItemEdit.id) {
-            setTitle(stringResource(R.string.edit_mode))
-            ViewEdit(
-                { navController.navigate(ItemMap.id) },
-                { item : Item -> viewModel.addItem(item, MapViewModel.currentPlace) }
+            ItemEditScreen(
+                back = { navController.navigate(ItemMap.id) },
+                save = { item : Item -> viewModel.addItem(item, MapViewModel.currentPlace) }
             )	// back, save
         }
     }

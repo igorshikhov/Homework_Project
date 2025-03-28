@@ -6,11 +6,11 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import dagger.hilt.android.AndroidEntryPoint
 import otus.project.mapapp.model.MapViewModel
@@ -20,7 +20,7 @@ import otus.project.mapapp.ui.MapApp
  * Activity for application flow.
  */
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity() {
+class MainActivity : ComponentActivity() {
 
     private val viewModel : MapViewModel by viewModels()
 
@@ -47,7 +47,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         locationPermissions()
         setContent {
-            MapApp(viewModel, { this.setTitle(it) }, { this.finish() })
+            MapApp(viewModel, { this.finish() })
         }
     }
 
