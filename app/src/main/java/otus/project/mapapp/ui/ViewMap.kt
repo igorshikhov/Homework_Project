@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -18,12 +17,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import otus.project.mapapp.R
@@ -34,15 +33,8 @@ import otus.project.mapapp.model.ViewType
 private const val iWidth = 576
 private const val iHeight = 1000
 
-@Composable
-fun mapFixed() : Painter {
-    return painterResource(id = R.drawable.map800)
-}
-
-@Composable
-fun mapImage(getImage : (Int, Int) -> Bitmap?) : Bitmap? {
-    Box { CircularProgressIndicator(color = colorResource(id = R.color.medium_purple)) }
-    return getImage(iWidth, iHeight)
+fun mapImage(getImage : (Int, Int) -> Bitmap?) : ImageBitmap? {
+    return getImage(iWidth, iHeight)?.asImageBitmap()
 }
 
 @Composable
@@ -71,13 +63,12 @@ fun ViewMap(getImage : (Int, Int) -> Bitmap?, back : () -> Unit, toList : () -> 
                     .fillMaxWidth(1f)
                     .padding(dimensionResource(id = R.dimen.list_padding))
             ) {
-                val imageBmp = bitmap.value?.asImageBitmap()
-                if (imageBmp != null) {
-                    Image(bitmap = imageBmp, contentDescription = "", contentScale = ContentScale.Fit)
-                }
-                else {
-                    Image(painter = mapFixed(), contentDescription = "", contentScale = ContentScale.Fit)
-                }
+                Image(
+                    bitmap = bitmap.value ?: ImageBitmap.Companion.imageResource(id = R.drawable.map800),
+                    contentDescription = "",
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier.testTag("ViewMap-Image")
+                )
             }
 
             Row(horizontalArrangement = Arrangement.End,
@@ -99,13 +90,13 @@ fun ViewMap(getImage : (Int, Int) -> Bitmap?, back : () -> Unit, toList : () -> 
                 zoomIn = {
                     if (MapViewModel.currentZoom < 17) {
                         ++MapViewModel.currentZoom
-                        bitmap.value = getImage(iWidth, iHeight)
+                        bitmap.value = mapImage(getImage)
                     }
                 },
                 zoomOut = {
                     if (MapViewModel.currentZoom > 1) {
                         --MapViewModel.currentZoom
-                        bitmap.value = getImage(iWidth, iHeight)
+                        bitmap.value = mapImage(getImage)
                     }
                 }
             )

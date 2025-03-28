@@ -3,7 +3,7 @@ package otus.project.mapapp.db
 import android.content.Context
 import android.widget.Toast
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
 import otus.project.mapapp.model.Item
 import otus.project.mapapp.model.Place
@@ -15,7 +15,7 @@ class MarkerStore @Inject constructor(@ApplicationContext private val ctx : Cont
     private val dao : MarkerDao by lazy { db.getDao() }
 
     suspend fun addItem(item : Item, place : Place) {
-        withContext(Dispatchers.IO) {
+        withContext(currentCoroutineContext()) {
             try {
                 val cats: List<Long> = dao.getCategoryId(item.category)
                 dao.addObject(
@@ -44,7 +44,7 @@ class MarkerStore @Inject constructor(@ApplicationContext private val ctx : Cont
 
     suspend fun getItems() : List<Item> {
         val items: MutableList<Item> = mutableListOf()
-        withContext(Dispatchers.IO) {
+        withContext(currentCoroutineContext()) {
             try {
                 val data: List<ObjectData> = dao.getObjects()
                 data.forEach {
@@ -66,7 +66,7 @@ class MarkerStore @Inject constructor(@ApplicationContext private val ctx : Cont
 
     suspend fun getPlace(objId : Long) : Place {
         val place = Place()
-        withContext(Dispatchers.IO) {
+        withContext(currentCoroutineContext()) {
             try {
                 val marks: List<MarkerData> = dao.getMarker(objId)
                 if (marks.isNotEmpty()) {

@@ -3,6 +3,7 @@ package otus.project.mapapp.model
 import android.content.Context
 import android.graphics.Bitmap
 import android.os.Build
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -14,7 +15,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import otus.project.mapapp.db.MarkerStore
-import otus.project.mapapp.map.CheckLocation
+import otus.project.mapapp.loc.CheckLocation
 import otus.project.mapapp.net.NetClient
 import otus.project.mapapp.net.PlaceData
 import javax.inject.Inject
@@ -23,30 +24,33 @@ enum class ViewType { TypeAny, TypeList, TypeMap }
 enum class ViewMode { ModeView, ModeEdit }
 enum class MapStyle { Main, Dark, Light }
 
-//class MapViewModel(private val ctx : Context) : ViewModel() {
-
 @HiltViewModel
 class MapViewModel @Inject constructor (@ApplicationContext private val ctx : Context) : ViewModel() {
 
-    //private val store : MarkerStore by lazy { MarkerStore(ctx) }
     @Inject lateinit var store : MarkerStore
     @Inject lateinit var check : CheckLocation
 
     companion object {
-        var currentViewType : ViewType = ViewType.TypeAny
-        var currentViewMode : ViewMode = ViewMode.ModeView
-        var currentSelected : Long = 0
-        var currentPlace : Place = Place()
-        var currentCenter : Place = Place(55.75f,37.62f)
-        var currentRadius : Int = 5000
-        var currentFilter : String = "памятник"
-        var currentLimit : Int = 25
-        var currentStyle : MapStyle = MapStyle.Main
-        var currentZoom : Int = 12
+        val defaultCenter : Place = Place(55.75f,37.62f)
+        val useSourceNet : Boolean = true
+        var useSourceDb : Boolean = false
         var resetOnChange : Boolean = true
         var checkLocation : Boolean = false
-        var useSourceDb : Boolean = false
-        val useSourceNet : Boolean = true
+        var locationEnabled : Boolean = false
+        // текущее состояние
+        var currentViewMode : ViewMode = ViewMode.ModeView
+        var currentViewType : ViewType = ViewType.TypeAny
+        // выбор из списка / на карте
+        var currentSelected : Long = 0
+        var currentPlace : Place = Place()
+        // параметры запроса данных
+        var currentCenter : Place = defaultCenter
+        var currentRadius : Int = 5000
+        var currentFilter : String = "monument"
+        var currentLimit : Int = 20
+        // параметры карты
+        var currentStyle : MapStyle = MapStyle.Main
+        var currentZoom : Int = 12
 
         private fun currentMapStyle() : String {
             return when (currentStyle) {
@@ -89,7 +93,7 @@ class MapViewModel @Inject constructor (@ApplicationContext private val ctx : Co
         var place = mplace.get(objId)
         if (place == null) {
             if (useSourceDb) {
-                viewModelScope.launch {
+                viewModelScope.launch(Dispatchers.IO) {
                     place = store.getPlace(objId)
                 }
             }
@@ -116,7 +120,7 @@ class MapViewModel @Inject constructor (@ApplicationContext private val ctx : Co
         _items.add(item)
         _place.put(item.id, place)
         if (useSourceDb) {
-            viewModelScope.launch {
+            viewModelScope.launch(Dispatchers.IO) {
                 store.addItem(item, place)
             }
         }
@@ -135,7 +139,7 @@ class MapViewModel @Inject constructor (@ApplicationContext private val ctx : Co
     }
 
     private fun dataFromDb() {
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             _items.addAll(store.getItems())
             for (item in mitems) {
                 _place.put(item.id, store.getPlace(item.id))
@@ -147,14 +151,15 @@ class MapViewModel @Inject constructor (@ApplicationContext private val ctx : Co
     }
 
     private fun dataFromNet() {
-        viewModelScope.launch {
+        var err : String? = null
+        runBlocking(Dispatchers.IO) {
             val data: Deferred<List<PlaceData>> = async {
                 NetClient.getDataAsync(
                     currentFilter,
                     currentLimit,
                     currentCenter,
                     currentRadius,
-                    ctx
+                    { err = it }
                 )
             }
             val results = data.await()
@@ -174,6 +179,7 @@ class MapViewModel @Inject constructor (@ApplicationContext private val ctx : Co
                 }
             }
         }
+        err?.let { Toast.makeText(ctx, err, Toast.LENGTH_LONG).show() }
     }
 
     @RequiresApi(Build.VERSION_CODES.S)
@@ -181,24 +187,26 @@ class MapViewModel @Inject constructor (@ApplicationContext private val ctx : Co
         initData()
         if (checkLocation) {
             if (check.isLocationFound()) {
-                currentCenter = check.getLocation()
+                currentCenter = check.getLocation() ?: defaultCenter
             }
         }
+        val url = NetClient.getImageUrl(
+            currentCenter,
+            currentZoom,
+            currentMapStyle(),
+            width,
+            height,
+            mplace,
+            currentSelected
+        )
+        var err : String? = null
         var bmp : Bitmap? = null
         runBlocking(Dispatchers.IO) {
             launch {
-                val url = NetClient.getImageUrl(
-                    currentCenter,
-                    currentZoom,
-                    currentMapStyle(),
-                    width,
-                    height,
-                    mplace,
-                    currentSelected
-                )
-                bmp = NetClient.getBitmapAsync(url, ctx)
+                bmp = NetClient.getBitmapAsync(url, { err = it })
             }
         }
+        err?.let { Toast.makeText(ctx, err, Toast.LENGTH_LONG).show() }
         return bmp
     }
 }

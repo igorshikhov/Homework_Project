@@ -22,6 +22,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
@@ -61,43 +62,46 @@ fun ViewMode(back : (ViewType) -> Unit, resetModel : () -> Unit) {
             modifier = Modifier.fillMaxHeight(1f)
         ) {
             Text(text = stringResource(id = R.string.map_mode), fontSize = 18.sp,
-                modifier = Modifier.padding(space).width(128.dp))
-
+                modifier = Modifier.padding(space).width(128.dp)
+            )
             Row(horizontalArrangement = Arrangement.Center,
                 modifier = Modifier.fillMaxWidth(0.8f)
             ) {
                 Select(stringResource(R.string.view_mode),
                     selectedMode == ViewMode.ModeView,
                     { onModeSelected(ViewMode.ModeView) },
-                    Modifier.align(Alignment.CenterVertically))
-
+                    Modifier.align(Alignment.CenterVertically)
+                )
                 Select(stringResource(R.string.edit_mode),
                     selectedMode == ViewMode.ModeEdit,
                     { onModeSelected(ViewMode.ModeEdit) },
-                    Modifier.align(Alignment.CenterVertically), false)
+                    Modifier.align(Alignment.CenterVertically),
+                    false
+                )
             }
             HorizontalDivider()
 
             Text(text = stringResource(id = R.string.map_style), fontSize = 18.sp,
-                modifier = Modifier.padding(space))
-
+                modifier = Modifier.padding(space)
+            )
             Row(horizontalArrangement = Arrangement.Center,
                 modifier = Modifier.fillMaxWidth(0.8f)
             ) {
                 Select(stringResource(R.string.map_main),
                     selectedStyle == MapStyle.Main,
                     { onStyleSelected(MapStyle.Main) },
-                    Modifier.align(Alignment.CenterVertically))
-
+                    Modifier.align(Alignment.CenterVertically)
+                )
                 Select(stringResource(R.string.map_dark),
                     selectedStyle == MapStyle.Dark,
                     { onStyleSelected(MapStyle.Dark) },
-                    Modifier.align(Alignment.CenterVertically))
-
+                    Modifier.align(Alignment.CenterVertically)
+                )
                 Select(stringResource(R.string.map_simple),
                     selectedStyle == MapStyle.Light,
                     { onStyleSelected(MapStyle.Light) },
-                    Modifier.align(Alignment.CenterVertically))
+                    Modifier.align(Alignment.CenterVertically)
+                )
             }
             HorizontalDivider()
 
@@ -114,7 +118,7 @@ fun ViewMode(back : (ViewType) -> Unit, resetModel : () -> Unit) {
                 TextField(value = limit.value.toString(),
                     onValueChange = { limit.value = if (it.length == 0) 0 else it.toInt() },
                     textStyle = TextStyle(fontSize = 20.sp),
-                    modifier = Modifier.padding(space).width(96.dp),
+                    modifier = Modifier.padding(space).width(96.dp).testTag("Settings-Limit"),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                 )
             }
@@ -129,7 +133,7 @@ fun ViewMode(back : (ViewType) -> Unit, resetModel : () -> Unit) {
                 TextField(value = radius.value.toString(),
                     onValueChange = { radius.value = if (it.length == 0) 0 else it.toInt() },
                     textStyle = TextStyle(fontSize = 20.sp),
-                    modifier = Modifier.padding(space).width(128.dp),
+                    modifier = Modifier.padding(space).width(128.dp).testTag("Settings-Radius"),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                 )
             }
@@ -144,7 +148,7 @@ fun ViewMode(back : (ViewType) -> Unit, resetModel : () -> Unit) {
                 TextField(value = filter.value,
                     onValueChange = { filter.value = it },
                     textStyle = TextStyle(fontSize = 20.sp),
-                    modifier = Modifier.padding(space)
+                    modifier = Modifier.padding(space).testTag("Settings-Filter")
                 )
             }
 
@@ -173,7 +177,7 @@ fun ViewMode(back : (ViewType) -> Unit, resetModel : () -> Unit) {
                 Switch(checked = useDb.value,
                     onCheckedChange = { useDb.value = it },
                     modifier = Modifier.padding(space),
-                    enabled = true
+                    enabled = false
                 )
             }
 
@@ -187,7 +191,7 @@ fun ViewMode(back : (ViewType) -> Unit, resetModel : () -> Unit) {
                 Switch(checked = checkLoc.value,
                     onCheckedChange = { checkLoc.value = it },
                     modifier = Modifier.padding(space),
-                    enabled = true
+                    enabled = MapViewModel.locationEnabled
                 )
             }
             HorizontalDivider()
@@ -198,21 +202,22 @@ fun ViewMode(back : (ViewType) -> Unit, resetModel : () -> Unit) {
                 tune = toolbar.Mode,
                 back = { back(MapViewModel.currentViewType) },
                 save = {
+                    MapViewModel.useSourceDb = useDb.value
+                    MapViewModel.currentViewMode = selectedMode
+                    MapViewModel.currentStyle = selectedStyle
+                    MapViewModel.checkLocation = checkLoc.value
+                    MapViewModel.resetOnChange = clearData.value
                     if (MapViewModel.currentLimit != limit.value ||
                         MapViewModel.currentRadius != radius.value ||
-                        MapViewModel.currentFilter.compareTo(filter.value) != 0) {
+                        MapViewModel.currentFilter.compareTo(filter.value) != 0)
+                    {   // изменились параметры запроса
                         MapViewModel.currentLimit = limit.value
                         MapViewModel.currentRadius = radius.value
                         MapViewModel.currentFilter = filter.value
-                        MapViewModel.resetOnChange = clearData.value
                         if (MapViewModel.resetOnChange) {
                             resetModel()
                         }
                     }
-                    MapViewModel.currentStyle = selectedStyle
-                    MapViewModel.currentViewMode = selectedMode
-                    MapViewModel.checkLocation = checkLoc.value
-                    MapViewModel.useSourceDb = useDb.value
                 }
             )
         }

@@ -1,14 +1,7 @@
 package otus.project.mapapp.net
 
-import android.content.Context
 import android.graphics.Bitmap
-import android.widget.Toast
 import com.squareup.picasso.Picasso
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import otus.project.mapapp.model.Place
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -41,14 +34,14 @@ object NetClient {
     }
     private val service : DataService by lazy { retrofit.create(DataService::class.java) }
 
-    suspend fun getDataAsync(filter : String, count : Int, center : Place, radius : Int, ctx: Context) : List<PlaceData> {
+    suspend fun getDataAsync(filter : String, count : Int, center : Place, radius : Int, onError : (String) -> Unit = {}) : List<PlaceData> {
         try {
             val response =
                 service.getPlaces("${center.latitude},${center.longitude}", "$radius", "$count", filter, fieldset, apikey)
             return response.results
         }
         catch (t: Throwable) {
-            Toast.makeText(ctx,t.message ?: "unknown error", Toast.LENGTH_LONG).show()
+            onError(t.message ?: "unknown error")
         }
         return listOf()
     }
@@ -75,12 +68,12 @@ object NetClient {
         return MAP_URL + param
     }
 
-    fun getBitmapAsync(url : String, ctx : Context) : Bitmap? {
+    fun getBitmapAsync(url : String, onError : (String) -> Unit = {}) : Bitmap? {
         try {
             return Picasso.get().load(url).get()
         }
         catch (t: Throwable) {
-            Toast.makeText(ctx, t.message ?: "unknown error", Toast.LENGTH_LONG).show()
+            onError(t.message ?: "unknown error")
         }
         return null
     }
