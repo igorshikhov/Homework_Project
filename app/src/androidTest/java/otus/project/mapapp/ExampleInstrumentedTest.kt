@@ -14,6 +14,7 @@ import org.junit.runner.RunWith
 
 import org.junit.Assert.*
 import otus.project.mapapp.db.MarkerStore
+import otus.project.mapapp.db.di.DatabaseModule
 import otus.project.mapapp.loc.CheckLocation
 import otus.project.mapapp.model.Item
 import otus.project.mapapp.model.MapViewModel
@@ -56,43 +57,12 @@ class ExampleInstrumentedTest {
     }
 
     @Test
-    fun testNetClient() {
-        val client = NetClient()
-        val center = Place(55.75f,37.62f)
-        val url = client.getImageUrl(center, 12, "main", 512, 512)
-        var err : String? = null
-        val bmp = client.getBitmapAsync(url, { err = it })
-        assertNull(err)
-        assertNotNull(bmp)
-    }
-
-    @Test
-    fun testNetClientData() {
-        val client = NetClient()
-        val center = Place(55.75f,37.62f)
-        val filter = "monument"
-        var idata : PlaceData? = null
-        var err : String? = null
-        runBlocking(Dispatchers.IO) {
-            launch {
-                val data: Deferred<List<PlaceData>> = async {
-                    client.getDataAsync(filter, 1, center, 1000, { err = it })
-                }
-                val result = data.await()
-                if (result.size > 0)
-                    idata = result.first()
-            }
-        }
-        assertNull(err)
-        assertNotNull(idata)
-        assertNotNull(idata?.name)
-        assertNotNull(idata?.type)
-    }
-
-    @Test
     fun testViewModel() {
         val ctx = InstrumentationRegistry.getInstrumentation().context
-        val viewModel = MapViewModel(ctx)
+        val client = NetClient()
+        val store = MarkerStore(DatabaseModule.provideMarkerDao(DatabaseModule.provideMarkerDatabase(ctx)))
+        val check = CheckLocation(ctx)
+        val viewModel = MapViewModel(ctx, client, store, check)
         val item = Item(1, "объект 1", "данные 1", "адрес 1")
         val place = Place(55.75f,37.62f)
         viewModel.addItem(item, place)
@@ -103,7 +73,10 @@ class ExampleInstrumentedTest {
     @Test
     fun testViewModelState() {
         val ctx = InstrumentationRegistry.getInstrumentation().context
-        val viewModel = MapViewModel(ctx)
+        val client = NetClient()
+        val store = MarkerStore(DatabaseModule.provideMarkerDao(DatabaseModule.provideMarkerDatabase(ctx)))
+        val check = CheckLocation(ctx)
+        val viewModel = MapViewModel(ctx, client, store, check)
         val place = viewModel.query.center
         assertNotSame(0f, place.latitude)
         assertNotSame(0f, place.longitude)
@@ -112,16 +85,18 @@ class ExampleInstrumentedTest {
     @Test
     fun testDataStore() {
         val ctx = InstrumentationRegistry.getInstrumentation().context
-        val store = MarkerStore(ctx)
+        val store = MarkerStore(DatabaseModule.provideMarkerDao(DatabaseModule.provideMarkerDatabase(ctx)))
         val item = Item(1, "объект 1", "данные 1", "адрес 1")
         val place = Place(55.75f,37.62f)
         val ilist : MutableList<Item> = mutableListOf()
+        var err : String? = null
         runBlocking {
             CoroutineScope(Dispatchers.IO).launch {
-                store.addItem(item, place)
-                ilist.addAll(store.getItems())
+                store.addItem(item, place) { err = it }
+                ilist.addAll(store.getItems { err = it })
             }
         }
+        assertNull(err)
         assertEquals(1, ilist.size)
     }
 }

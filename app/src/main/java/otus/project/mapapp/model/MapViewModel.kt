@@ -28,14 +28,15 @@ private fun styleToString(style : MapStyle) : String {
     }
 }
 
-private val defaultCenter : Place = Place(55.75f,37.62f)
-
 @HiltViewModel
-class MapViewModel @Inject constructor (@ApplicationContext private val ctx : Context) : ViewModel() {
+class MapViewModel @Inject constructor (
+    @ApplicationContext private val ctx : Context,
+    var client : NetClient,
+    var store : MarkerStore,
+    var check : CheckLocation
+) : ViewModel() {
 
-    @Inject lateinit var store : MarkerStore
-    @Inject lateinit var check : CheckLocation
-    @Inject lateinit var client : NetClient
+    private val defaultCenter : Place = Place(55.75f,37.62f)
 
     // текущее состояние
     var currentViewMode : ViewMode = ViewMode.ModeView
@@ -43,7 +44,6 @@ class MapViewModel @Inject constructor (@ApplicationContext private val ctx : Co
     // выбор из списка / на карте
     var currentSelected : Long = 0
     var currentPlace : Place = Place()
-
     // параметры запроса
     val query : CurrentQuery = CurrentQuery(defaultCenter, 5000, "monument", 20, MapStyle.Main, 12)
     // настройки приложения
@@ -79,11 +79,13 @@ class MapViewModel @Inject constructor (@ApplicationContext private val ctx : Co
         //initData()
         var place = mplace.get(objId)
         if (place == null) {
+            var err : String? = null
             if (state.useSourceDb) {
                 viewModelScope.launch(Dispatchers.IO) {
-                    place = store.getPlace(objId)
+                    place = store.getPlace(objId) { err = it }
                 }
             }
+            err?.let { Toast.makeText(ctx, err, Toast.LENGTH_LONG).show() }
         }
         return place ?: Place()
     }
@@ -106,16 +108,18 @@ class MapViewModel @Inject constructor (@ApplicationContext private val ctx : Co
         item.id = newId()
         _items.add(item)
         _place.put(item.id, place)
+        var err : String? = null
         if (state.useSourceDb) {
             viewModelScope.launch(Dispatchers.IO) {
-                store.addItem(item, place)
+                store.addItem(item, place) { err = it }
             }
         }
+        err?.let { Toast.makeText(ctx, err, Toast.LENGTH_LONG).show() }
         return item.id
     }
 
     private fun initData() {
-        if (mitems.isEmpty() || state.resetOnChange == false) {
+        if (mitems.isEmpty() || !state.resetOnChange) {
             if (state.useSourceDb) {
                 dataFromDb()
             }
@@ -126,12 +130,14 @@ class MapViewModel @Inject constructor (@ApplicationContext private val ctx : Co
     }
 
     private fun dataFromDb() {
+        var err : String? = null
         viewModelScope.launch(Dispatchers.IO) {
-            _items.addAll(store.getItems())
+            _items.addAll(store.getItems { err = it })
             for (item in mitems) {
-                _place.put(item.id, store.getPlace(item.id))
+                _place.put(item.id, store.getPlace(item.id) { err = it })
             }
         }
+        err?.let { Toast.makeText(ctx, err, Toast.LENGTH_LONG).show() }
         if (mitems.isNotEmpty()) {
             lastId = mitems.maxOf { it.id }
         }
@@ -146,8 +152,7 @@ class MapViewModel @Inject constructor (@ApplicationContext private val ctx : Co
                         count = query.limit,
                         center = query.center,
                         radius = query.radius,
-                        onError = { err = it }
-                )
+                ) { err = it }
             }
             val results = data.await()
             for (r in results) {
@@ -162,7 +167,7 @@ class MapViewModel @Inject constructor (@ApplicationContext private val ctx : Co
                 _items.add(item)
                 _place.put(item.id, place)
                 if (state.useSourceDb) {
-                    store.addItem(item, place)
+                    store.addItem(item, place) { err = it }
                 }
             }
         }
@@ -190,7 +195,7 @@ class MapViewModel @Inject constructor (@ApplicationContext private val ctx : Co
         var bmp : Bitmap? = null
         runBlocking(Dispatchers.IO) {
             launch {
-                bmp = client.getBitmapAsync(url, { err = it })
+                bmp = client.getBitmapAsync(url) { err = it }
             }
         }
         err?.let { Toast.makeText(ctx, err, Toast.LENGTH_LONG).show() }

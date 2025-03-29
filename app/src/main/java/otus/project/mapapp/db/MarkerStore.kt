@@ -9,12 +9,9 @@ import otus.project.mapapp.model.Item
 import otus.project.mapapp.model.Place
 import javax.inject.Inject
 
-class MarkerStore @Inject constructor(@ApplicationContext private val ctx : Context) {
+class MarkerStore @Inject constructor(val dao : MarkerDao) {
 
-    private val db: MarkerDatabase by lazy { provideDatabase(ctx) }
-    private val dao : MarkerDao by lazy { db.getDao() }
-
-    suspend fun addItem(item : Item, place : Place) {
+    suspend fun addItem(item : Item, place : Place, onError : (String) -> Unit = {}) {
         withContext(currentCoroutineContext()) {
             try {
                 val cats: List<Long> = dao.getCategoryId(item.category)
@@ -37,12 +34,12 @@ class MarkerStore @Inject constructor(@ApplicationContext private val ctx : Cont
                 )
             }
             catch (t: Throwable) {
-                Toast.makeText(ctx, t.message ?: "unknown error", Toast.LENGTH_LONG).show()
+                onError(t.message ?: "unknown error in addItem()")
             }
         }
     }
 
-    suspend fun getItems() : List<Item> {
+    suspend fun getItems(onError : (String) -> Unit = {}) : List<Item> {
         val items: MutableList<Item> = mutableListOf()
         withContext(currentCoroutineContext()) {
             try {
@@ -58,13 +55,13 @@ class MarkerStore @Inject constructor(@ApplicationContext private val ctx : Cont
                 }
             }
             catch (t: Throwable) {
-                Toast.makeText(ctx, t.message ?: "unknown error", Toast.LENGTH_LONG).show()
+                onError(t.message ?: "unknown error in getItems()")
             }
         }
         return items.toList()
     }
 
-    suspend fun getPlace(objId : Long) : Place {
+    suspend fun getPlace(objId : Long, onError : (String) -> Unit = {}) : Place {
         val place = Place()
         withContext(currentCoroutineContext()) {
             try {
@@ -76,7 +73,7 @@ class MarkerStore @Inject constructor(@ApplicationContext private val ctx : Cont
                 }
             }
             catch (t: Throwable) {
-                Toast.makeText(ctx, t.message ?: "unknown error", Toast.LENGTH_LONG).show()
+                onError(t.message ?: "unknown error in getPlace()")
             }
         }
         return place

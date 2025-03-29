@@ -152,12 +152,21 @@ interface MarkerDao {
 )
 abstract class MarkerDatabase : RoomDatabase() {
     abstract fun getDao() : MarkerDao
+
+    companion object {
+
+        private const val MAPAPP_DB = "mapapp.db"
+
+        private var instance : MarkerDatabase? = null
+
+        fun provideDatabase(context: Context) : MarkerDatabase {
+            return instance ?: synchronized(this) {
+                Room.databaseBuilder(context, MarkerDatabase::class.java, MAPAPP_DB)
+                    .allowMainThreadQueries()
+                    .build()
+                    .also { instance = it }
+            }
+        }
+    }
 }
 
-private const val MAPAPP_DATABASE = "mapapp.db"
-
-fun provideDatabase(context: Context) : MarkerDatabase {
-    return Room.databaseBuilder(context, MarkerDatabase::class.java, MAPAPP_DATABASE)
-        .allowMainThreadQueries()
-        .build()
-}
