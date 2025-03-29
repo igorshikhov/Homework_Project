@@ -8,6 +8,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
 import javax.inject.Inject
+import javax.inject.Singleton
 
 private const val apikey = "demo"
 private const val fieldset = "address,name,pin,place_details,type"
@@ -18,6 +19,7 @@ private const val pin_default = "blue" // or "purple"
 private const val pin_central = "pink" // or "violet"
 private const val MAP_URL = "https://demo.maps.vk.com/api/staticmap/png"
 
+@Singleton
 class NetClient @Inject constructor() {
 
     private interface DataService {

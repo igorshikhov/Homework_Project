@@ -1,14 +1,13 @@
 package otus.project.mapapp.db
 
-import android.content.Context
-import android.widget.Toast
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
 import otus.project.mapapp.model.Item
 import otus.project.mapapp.model.Place
 import javax.inject.Inject
+import javax.inject.Singleton
 
+@Singleton
 class MarkerStore @Inject constructor(val dao : MarkerDao) {
 
     suspend fun addItem(item : Item, place : Place, onError : (String) -> Unit = {}) {

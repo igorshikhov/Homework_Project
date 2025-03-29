@@ -57,6 +57,40 @@ class ExampleInstrumentedTest {
     }
 
     @Test
+    fun testNetClient() {
+        val client = NetClient()
+        val center = Place(55.75f,37.62f)
+        val url = client.getImageUrl(center, 12, "main", 512, 512)
+        var err : String? = null
+        val bmp = client.getBitmapAsync(url) { err = it }
+        assertNull(err)
+        assertNotNull(bmp)
+    }
+
+    @Test
+    fun testNetClientData() {
+        val client = NetClient()
+        val center = Place(55.75f,37.62f)
+        val filter = "monument"
+        var idata : PlaceData? = null
+        var err : String? = null
+        runBlocking(Dispatchers.IO) {
+            launch {
+                val data: Deferred<List<PlaceData>> = async {
+                    client.getDataAsync(filter, 1, center, 1000) { err = it }
+                }
+                val result = data.await()
+                if (result.isNotEmpty())
+                    idata = result.first()
+            }
+        }
+        assertNull(err)
+        assertNotNull(idata)
+        assertNotNull(idata?.name)
+        assertNotNull(idata?.type)
+    }
+
+    @Test
     fun testViewModel() {
         val ctx = InstrumentationRegistry.getInstrumentation().context
         val client = NetClient()
