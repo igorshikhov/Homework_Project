@@ -18,6 +18,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import otus.project.mapapp.R
 import otus.project.mapapp.model.Item
 import otus.project.mapapp.model.MapViewModel
@@ -34,9 +35,10 @@ fun InfoLine(name : String, data : String, modifier : Modifier = Modifier) {
 }
 
 @Composable
-fun ItemInfoScreen(item : Item, back : (ViewType) -> Unit) {
+fun ItemInfoScreen(model : MapViewModel, back : (ViewType) -> Unit) {
     val space = dimensionResource(id = R.dimen.item_padding)
-    val place = "${MapViewModel.currentPlace.latitude}, ${MapViewModel.currentPlace.longitude}"
+    val item : Item = model.getItem(model.currentSelected)
+    val place = "${model.currentPlace.latitude}, ${model.currentPlace.longitude}"
     Surface {
         Column(
             verticalArrangement = Arrangement.Top,
@@ -59,9 +61,9 @@ fun ItemInfoScreen(item : Item, back : (ViewType) -> Unit) {
 
             ToolBar(
                 tune = toolbar.Info,
-                back = { back(MapViewModel.currentViewType) },
+                back = { back(model.currentViewType) },
                 toMap = {
-                    MapViewModel.currentCenter = MapViewModel.currentPlace
+                    model.query.center = model.currentPlace
                     back(ViewType.TypeMap)
                 }
             )
@@ -72,5 +74,5 @@ fun ItemInfoScreen(item : Item, back : (ViewType) -> Unit) {
 @Preview(apiLevel = 34)
 @Composable
 fun ItemInfoScreenPreview() {
-    ItemInfoScreen(Item(1,"объект 1", "данные 1", "адрес 1", "категория 1"), {})
+    ItemInfoScreen(viewModel(), {})
 }

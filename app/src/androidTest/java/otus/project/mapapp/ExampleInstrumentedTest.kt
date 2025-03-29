@@ -57,16 +57,18 @@ class ExampleInstrumentedTest {
 
     @Test
     fun testNetClient() {
+        val client = NetClient()
         val center = Place(55.75f,37.62f)
-        val url = NetClient.getImageUrl(center, 12, "main", 512, 512)
+        val url = client.getImageUrl(center, 12, "main", 512, 512)
         var err : String? = null
-        val bmp = NetClient.getBitmapAsync(url, { err = it })
+        val bmp = client.getBitmapAsync(url, { err = it })
         assertNull(err)
         assertNotNull(bmp)
     }
 
     @Test
     fun testNetClientData() {
+        val client = NetClient()
         val center = Place(55.75f,37.62f)
         val filter = "monument"
         var idata : PlaceData? = null
@@ -74,7 +76,7 @@ class ExampleInstrumentedTest {
         runBlocking(Dispatchers.IO) {
             launch {
                 val data: Deferred<List<PlaceData>> = async {
-                    NetClient.getDataAsync(filter, 1, center, 1000, { err = it })
+                    client.getDataAsync(filter, 1, center, 1000, { err = it })
                 }
                 val result = data.await()
                 if (result.size > 0)
@@ -100,7 +102,9 @@ class ExampleInstrumentedTest {
 
     @Test
     fun testViewModelState() {
-        val place = MapViewModel.currentCenter
+        val ctx = InstrumentationRegistry.getInstrumentation().context
+        val viewModel = MapViewModel(ctx)
+        val place = viewModel.query.center
         assertNotSame(0f, place.latitude)
         assertNotSame(0f, place.longitude)
     }

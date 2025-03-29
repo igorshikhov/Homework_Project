@@ -1,5 +1,6 @@
 package otus.project.mapapp
 
+import androidx.activity.viewModels
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -52,29 +53,32 @@ class ComposeInstrumentedTest {
 
     @Test
     fun doStyleSelectTest() {
+        val model : MapViewModel by composeTestRule.activity.viewModels()
         composeTestRule.onNodeWithText("Настройки").performClick()
         composeTestRule.waitUntil(5000, { true })
         composeTestRule.onNodeWithText("Dark").performClick()
         composeTestRule.onNodeWithText("Сохранить").performClick()
-        assertEquals(MapStyle.Dark, MapViewModel.Companion.currentStyle)
+        assertEquals(MapStyle.Dark, model.query.style)
     }
 
     @Test
     fun doFilterInputTest() {
+        val model : MapViewModel by composeTestRule.activity.viewModels()
         composeTestRule.onNodeWithText("Настройки").performClick()
         composeTestRule.waitUntil(5000, { true })
         composeTestRule.onNodeWithTag("Settings-Filter").assertExists().performTextClearance()
         composeTestRule.onNodeWithTag("Settings-Filter").performTextInput("памятник")
         composeTestRule.onNodeWithText("Сохранить").performClick()
-        assertEquals("памятник", MapViewModel.Companion.currentFilter)
+        assertEquals("памятник", model.query.filter)
     }
 
     @Test
     fun doLimitInputTest() {
+        val model : MapViewModel by composeTestRule.activity.viewModels()
         composeTestRule.onNodeWithText("Настройки").performClick()
         composeTestRule.waitUntil(5000, { true })
         composeTestRule.onNodeWithTag("Settings-Limit").assertExists().performTextClearance()
         composeTestRule.onNodeWithText("Сохранить").performClick()
-        assertEquals(0, MapViewModel.Companion.currentLimit)
+        assertEquals(0, model.query.limit)
     }
 }

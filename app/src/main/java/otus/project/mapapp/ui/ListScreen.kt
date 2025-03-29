@@ -21,6 +21,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import otus.project.mapapp.R
 import otus.project.mapapp.model.Item
 import otus.project.mapapp.model.MapViewModel
@@ -41,15 +42,15 @@ fun ItemLine(item : Item, onClick: () -> Unit, modifier : Modifier = Modifier) {
 }
 
 @Composable
-fun ListScreen(getList : () -> List<Item>, back : () -> Unit, toMap : () -> Unit, toSetup : () -> Unit, onClick : (Long) -> Unit) {
-    MapViewModel.currentViewType = ViewType.TypeList
-    val ilist = getList()
+fun ListScreen(model : MapViewModel, back : () -> Unit, toMap : () -> Unit, toSetup : () -> Unit, onClick : (Long) -> Unit) {
+    model.currentViewType = ViewType.TypeList
+    val ilist = model.getItems()
     Surface {
         Column(
             verticalArrangement = Arrangement.Top,
             modifier = Modifier.fillMaxHeight(1f)
         ) {
-            TitleBar(stringResource(R.string.item_list) + " (${MapViewModel.currentFilter})")
+            TitleBar(stringResource(R.string.item_list) + " (${model.query.filter})")
 
             LazyColumn(
                 horizontalAlignment = Alignment.Start,
@@ -79,5 +80,5 @@ fun ListScreen(getList : () -> List<Item>, back : () -> Unit, toMap : () -> Unit
 @Preview(apiLevel = 34)
 @Composable
 fun ListScreenPreview() {
-    ListScreen({ listOf(Item(1, "объект 1", "данные 1", "адрес 1")) }, {}, {}, {}, {})
+    ListScreen(viewModel(), {}, {}, {}, {})
 }

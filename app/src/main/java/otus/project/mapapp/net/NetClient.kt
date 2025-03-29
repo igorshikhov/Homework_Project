@@ -7,8 +7,18 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
+import javax.inject.Inject
 
-object NetClient {
+private const val apikey = "demo"
+private const val fieldset = "address,name,pin,place_details,type"
+private const val BASE_URL = "https://demo.maps.vk.com/api/"
+
+// pins=55.75,37.61,blue_star|60.65,38.12,red_info
+private const val pin_default = "blue" // or "purple"
+private const val pin_central = "pink" // or "violet"
+private const val MAP_URL = "https://demo.maps.vk.com/api/staticmap/png"
+
+class NetClient @Inject constructor() {
 
     private interface DataService {
         @GET("places")
@@ -21,10 +31,6 @@ object NetClient {
             @Query("api_key") key: String
         ) : PlaceResponse
     }
-
-    private const val apikey = "demo"
-    private const val fieldset = "address,name,pin,place_details,type"
-    private const val BASE_URL = "https://demo.maps.vk.com/api/"
 
     private val retrofit : Retrofit by lazy {
         Retrofit.Builder()
@@ -47,11 +53,6 @@ object NetClient {
     }
 
 //------
-
-    // pins=55.75,37.61,blue_star|60.65,38.12,red_info
-    private const val pin_default = "blue" // or "purple"
-    private const val pin_central = "pink" // or "violet"
-    private const val MAP_URL = "https://demo.maps.vk.com/api/staticmap/png"
 
     fun getImageUrl(center : Place, zoom : Int, style : String, width : Int, height : Int, pins : Map<Long, Place> = mapOf(), selected : Long = 0) : String {
         var param = "?api_key=$apikey&latlon=${center.latitude},${center.longitude}&zoom=$zoom&style=$style&width=$width&height=$height&scale=2"

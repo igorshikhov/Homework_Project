@@ -1,6 +1,5 @@
 package otus.project.mapapp.ui
 
-import android.graphics.Bitmap
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,6 +25,7 @@ import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import otus.project.mapapp.R
 import otus.project.mapapp.model.MapViewModel
 import otus.project.mapapp.model.Place
@@ -34,12 +34,12 @@ import otus.project.mapapp.model.ViewType
 private const val iWidth = 576
 private const val iHeight = 1000
 
-fun mapImage(getImage : (Int, Int) -> Bitmap?) : ImageBitmap? {
-    return getImage(iWidth, iHeight)?.asImageBitmap()
+fun mapImage(model : MapViewModel) : ImageBitmap? {
+    return model.getMapImage(iWidth, iHeight)?.asImageBitmap()
 }
 
 @Composable
-fun MapScreen(getImage : (Int, Int) -> Bitmap?, back : () -> Unit, toList : () -> Unit, toSetup : () -> Unit, onClick : (Place) -> Unit = {}) {
+fun MapScreen(model : MapViewModel, back : () -> Unit, toList : () -> Unit, toSetup : () -> Unit, onClick : (Place) -> Unit = {}) {
 /*
     val options = MapStartOptions(
         center = LatLon(center.latitude.toDouble(), center.longitude.toDouble()),
@@ -50,15 +50,15 @@ fun MapScreen(getImage : (Int, Int) -> Bitmap?, back : () -> Unit, toList : () -
     )
     MapGlobalConfig.setMapStartOptions(options)
 */
-    MapViewModel.currentViewType = ViewType.TypeMap
-    val image = mapImage(getImage)
+    model.currentViewType = ViewType.TypeMap
+    val image = mapImage(model)
     var bitmap = remember { mutableStateOf(image) }
     Surface {
         Column(
             verticalArrangement = Arrangement.Top,
             modifier = Modifier.fillMaxHeight(1f)
         ) {
-            TitleBar(stringResource(R.string.map_view) + " (${MapViewModel.currentFilter})")
+            TitleBar(stringResource(R.string.map_view) + " (${model.query.filter})")
 
             Box(contentAlignment = Alignment.Center,
                 modifier = Modifier
@@ -77,7 +77,7 @@ fun MapScreen(getImage : (Int, Int) -> Bitmap?, back : () -> Unit, toList : () -
             Row(horizontalArrangement = Arrangement.End,
                 modifier = Modifier.fillMaxWidth(1f)
             ) {
-                Text(text = "zoom: " + MapViewModel.currentZoom.toString(),
+                Text(text = "zoom: " + model.query.zoom.toString(),
                     fontSize = 12.sp,
                     modifier = Modifier.padding(dimensionResource(id = R.dimen.list_padding))
                 )
@@ -91,15 +91,15 @@ fun MapScreen(getImage : (Int, Int) -> Bitmap?, back : () -> Unit, toList : () -
                 toList = toList,
                 toSetup = toSetup,
                 zoomIn = {
-                    if (MapViewModel.currentZoom < 17) {
-                        ++MapViewModel.currentZoom
-                        bitmap.value = mapImage(getImage)
+                    if (model.query.zoom < 17) {
+                        ++model.query.zoom
+                        bitmap.value = mapImage(model)
                     }
                 },
                 zoomOut = {
-                    if (MapViewModel.currentZoom > 1) {
-                        --MapViewModel.currentZoom
-                        bitmap.value = mapImage(getImage)
+                    if (model.query.zoom > 1) {
+                        --model.query.zoom
+                        bitmap.value = mapImage(model)
                     }
                 }
             )
@@ -110,5 +110,5 @@ fun MapScreen(getImage : (Int, Int) -> Bitmap?, back : () -> Unit, toList : () -
 @Preview(apiLevel = 34)
 @Composable
 fun MapScreenPreview() {
-    MapScreen({ _, _ -> null }, {}, {}, {}, {})
+    MapScreen(viewModel(), {}, {}, {}, {})
 }

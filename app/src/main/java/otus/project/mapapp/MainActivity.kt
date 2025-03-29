@@ -24,12 +24,12 @@ class MainActivity : ComponentActivity() {
 
     private val viewModel : MapViewModel by viewModels()
 
-    private fun locationPermissions() {
+    private fun locationPermissions(): Boolean {
         val requiredPermissions = listOf(
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION
         )
-        val request = registerForActivityResult(ActivityResultContracts.RequestPermission()) { it }
+        val request = registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
         requiredPermissions.forEach {
             if (ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED)
                 request.launch(it)
@@ -40,12 +40,12 @@ class MainActivity : ComponentActivity() {
         if (!isEnabled) {
             Toast.makeText(applicationContext, "Определение положения не разрешено", Toast.LENGTH_LONG).show()
         }
-        MapViewModel.locationEnabled = isEnabled
+        return isEnabled
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        locationPermissions()
+        viewModel.state.locationEnabled = locationPermissions()
         setContent {
             MapApp(viewModel, { this.finish() })
         }

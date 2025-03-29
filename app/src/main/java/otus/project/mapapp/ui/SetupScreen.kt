@@ -31,6 +31,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import otus.project.mapapp.R
 import otus.project.mapapp.model.MapStyle
 import otus.project.mapapp.model.MapViewModel
@@ -108,16 +109,10 @@ fun ToggleFlag(title : String, value : Boolean, modifier : Modifier, isEnabled: 
 }
 
 @Composable
-fun SetupScreen(back : (ViewType) -> Unit, resetModel : () -> Unit) {
+fun SetupScreen(model : MapViewModel, back : (ViewType) -> Unit) {
     val space = dimensionResource(id = R.dimen.item_padding)
-    var clearData = MapViewModel.resetOnChange
-    var checkLoc = MapViewModel.checkLocation
-    var useDb = MapViewModel.useSourceDb
-    var limit = MapViewModel.currentLimit
-    var radius = MapViewModel.currentRadius
-    var filter = MapViewModel.currentFilter
-    val (selectedMode, onModeSelected) = remember { mutableStateOf(MapViewModel.currentViewMode) }
-    val (selectedStyle, onStyleSelected) = remember { mutableStateOf(MapViewModel.currentStyle) }
+    val (selectedMode, onModeSelected) = remember { mutableStateOf(model.currentViewMode) }
+    val (selectedStyle, onStyleSelected) = remember { mutableStateOf(model.query.style) }
 
     Surface {
         Column(
@@ -177,15 +172,15 @@ fun SetupScreen(back : (ViewType) -> Unit, resetModel : () -> Unit) {
             Text(text = stringResource(id = R.string.query_settings), fontSize = 18.sp,
                 modifier = Modifier.padding(space))
 
-            limit = InputNumber(stringResource(id = R.string.quantity), limit, Modifier.padding(space), "Limit")
-            radius = InputNumber(stringResource(id = R.string.radius), radius, Modifier.padding(space), "Radius")
-            filter = InputString(stringResource(id = R.string.filter), filter, Modifier.padding(space), "Filter")
-            clearData = ToggleFlag(stringResource(id = R.string.clear_changed), clearData, Modifier.padding(space))
+            val limit = InputNumber(stringResource(id = R.string.quantity), model.query.limit, Modifier.padding(space), "Limit")
+            val radius = InputNumber(stringResource(id = R.string.radius), model.query.radius, Modifier.padding(space), "Radius")
+            val filter = InputString(stringResource(id = R.string.filter), model.query.filter, Modifier.padding(space), "Filter")
+            val clearData = ToggleFlag(stringResource(id = R.string.clear_changed), model.state.resetOnChange, Modifier.padding(space))
 
             HorizontalDivider()
 
-            useDb = ToggleFlag(stringResource(id = R.string.use_database), useDb, Modifier.padding(space), false)
-            checkLoc = ToggleFlag(stringResource(id = R.string.check_location), checkLoc, Modifier.padding(space), MapViewModel.locationEnabled)
+            val useDb = ToggleFlag(stringResource(id = R.string.use_database), model.state.useSourceDb, Modifier.padding(space), false)
+            val checkLoc = ToggleFlag(stringResource(id = R.string.check_location), model.state.checkLocation, Modifier.padding(space), model.state.locationEnabled)
 
             HorizontalDivider()
 
@@ -193,22 +188,22 @@ fun SetupScreen(back : (ViewType) -> Unit, resetModel : () -> Unit) {
 
             ToolBar(
                 tune = toolbar.Mode,
-                back = { back(MapViewModel.currentViewType) },
+                back = { back(model.currentViewType) },
                 save = {
-                    MapViewModel.useSourceDb = useDb
-                    MapViewModel.currentViewMode = selectedMode
-                    MapViewModel.currentStyle = selectedStyle
-                    MapViewModel.checkLocation = checkLoc
-                    MapViewModel.resetOnChange = clearData
-                    if (MapViewModel.currentLimit != limit ||
-                        MapViewModel.currentRadius != radius ||
-                        MapViewModel.currentFilter.compareTo(filter) != 0)
+                    model.state.useSourceDb = useDb
+                    model.currentViewMode = selectedMode
+                    model.query.style = selectedStyle
+                    model.state.checkLocation = checkLoc
+                    model.state.resetOnChange = clearData
+                    if (model.query.limit != limit ||
+                        model.query.radius != radius ||
+                        model.query.filter.compareTo(filter) != 0)
                     {   // изменились параметры запроса
-                        MapViewModel.currentLimit = limit
-                        MapViewModel.currentRadius = radius
-                        MapViewModel.currentFilter = filter
-                        if (MapViewModel.resetOnChange) {
-                            resetModel()
+                        model.query.limit = limit
+                        model.query.radius = radius
+                        model.query.filter = filter
+                        if (model.state.resetOnChange) {
+                            model.clearData()
                         }
                     }
                 }
@@ -220,5 +215,5 @@ fun SetupScreen(back : (ViewType) -> Unit, resetModel : () -> Unit) {
 @Preview(apiLevel = 34)
 @Composable
 fun SetupScreenPreview() {
-    SetupScreen({}, {})
+    SetupScreen(viewModel(), {})
 }

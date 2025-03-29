@@ -20,50 +20,37 @@ import otus.project.mapapp.net.NetClient
 import otus.project.mapapp.net.PlaceData
 import javax.inject.Inject
 
-enum class ViewType { TypeAny, TypeList, TypeMap }
-enum class ViewMode { ModeView, ModeEdit }
-enum class MapStyle { Main, Dark, Light }
+private fun styleToString(style : MapStyle) : String {
+    return when (style) {
+        MapStyle.Main -> "main"
+        MapStyle.Dark -> "dark"
+        MapStyle.Light -> "simple"
+    }
+}
+
+private val defaultCenter : Place = Place(55.75f,37.62f)
 
 @HiltViewModel
 class MapViewModel @Inject constructor (@ApplicationContext private val ctx : Context) : ViewModel() {
 
     @Inject lateinit var store : MarkerStore
     @Inject lateinit var check : CheckLocation
+    @Inject lateinit var client : NetClient
 
-    companion object {
-        val defaultCenter : Place = Place(55.75f,37.62f)
-        val useSourceNet : Boolean = true
-        var useSourceDb : Boolean = false
-        var resetOnChange : Boolean = true
-        var checkLocation : Boolean = false
-        var locationEnabled : Boolean = false
-        // текущее состояние
-        var currentViewMode : ViewMode = ViewMode.ModeView
-        var currentViewType : ViewType = ViewType.TypeAny
-        // выбор из списка / на карте
-        var currentSelected : Long = 0
-        var currentPlace : Place = Place()
-        // параметры запроса данных
-        var currentCenter : Place = defaultCenter
-        var currentRadius : Int = 5000
-        var currentFilter : String = "monument"
-        var currentLimit : Int = 20
-        // параметры карты
-        var currentStyle : MapStyle = MapStyle.Main
-        var currentZoom : Int = 12
+    // текущее состояние
+    var currentViewMode : ViewMode = ViewMode.ModeView
+    var currentViewType : ViewType = ViewType.TypeAny
+    // выбор из списка / на карте
+    var currentSelected : Long = 0
+    var currentPlace : Place = Place()
 
-        private fun currentMapStyle() : String {
-            return when (currentStyle) {
-                MapStyle.Main -> "main"
-                MapStyle.Dark -> "dark"
-                MapStyle.Light -> "simple"
-            }
-        }
+    // параметры запроса
+    val query : CurrentQuery = CurrentQuery(defaultCenter, 5000, "monument", 20, MapStyle.Main, 12)
+    // настройки приложения
+    val state : AppSettings = AppSettings(true, false, true, false, false)
 
-        private var lastId : Long = 0
-
-        private fun newId() : Long = ++lastId
-    }
+    private var lastId : Long = 0
+    private fun newId() : Long = ++lastId
 
     private var _place : MutableMap<Long, Place> = mutableMapOf()
     private val mplace : Map<Long, Place> = _place
@@ -92,7 +79,7 @@ class MapViewModel @Inject constructor (@ApplicationContext private val ctx : Co
         //initData()
         var place = mplace.get(objId)
         if (place == null) {
-            if (useSourceDb) {
+            if (state.useSourceDb) {
                 viewModelScope.launch(Dispatchers.IO) {
                     place = store.getPlace(objId)
                 }
@@ -119,7 +106,7 @@ class MapViewModel @Inject constructor (@ApplicationContext private val ctx : Co
         item.id = newId()
         _items.add(item)
         _place.put(item.id, place)
-        if (useSourceDb) {
+        if (state.useSourceDb) {
             viewModelScope.launch(Dispatchers.IO) {
                 store.addItem(item, place)
             }
@@ -128,11 +115,11 @@ class MapViewModel @Inject constructor (@ApplicationContext private val ctx : Co
     }
 
     private fun initData() {
-        if (mitems.isEmpty() || resetOnChange == false) {
-            if (useSourceDb) {
+        if (mitems.isEmpty() || state.resetOnChange == false) {
+            if (state.useSourceDb) {
                 dataFromDb()
             }
-            if (useSourceNet) {
+            if (state.useSourceNet) {
                 dataFromNet()
             }
         }
@@ -154,12 +141,12 @@ class MapViewModel @Inject constructor (@ApplicationContext private val ctx : Co
         var err : String? = null
         runBlocking(Dispatchers.IO) {
             val data: Deferred<List<PlaceData>> = async {
-                NetClient.getDataAsync(
-                    currentFilter,
-                    currentLimit,
-                    currentCenter,
-                    currentRadius,
-                    { err = it }
+                client.getDataAsync(
+                        filter = query.filter,
+                        count = query.limit,
+                        center = query.center,
+                        radius = query.radius,
+                        onError = { err = it }
                 )
             }
             val results = data.await()
@@ -174,7 +161,7 @@ class MapViewModel @Inject constructor (@ApplicationContext private val ctx : Co
                 val place = Place(r.pin[1], r.pin[0])
                 _items.add(item)
                 _place.put(item.id, place)
-                if (useSourceDb) {
+                if (state.useSourceDb) {
                     store.addItem(item, place)
                 }
             }
@@ -185,25 +172,25 @@ class MapViewModel @Inject constructor (@ApplicationContext private val ctx : Co
     @RequiresApi(Build.VERSION_CODES.S)
     fun getMapImage(width : Int, height : Int) : Bitmap? {
         initData()
-        if (checkLocation) {
+        if (state.checkLocation) {
             if (check.isLocationFound()) {
-                currentCenter = check.getLocation() ?: defaultCenter
+                query.center = check.getLocation() ?: defaultCenter
             }
         }
-        val url = NetClient.getImageUrl(
-            currentCenter,
-            currentZoom,
-            currentMapStyle(),
-            width,
-            height,
-            mplace,
-            currentSelected
+        val url = client.getImageUrl(
+                center = query.center,
+                zoom = query.zoom,
+                style = styleToString(query.style),
+                width = width,
+                height = height,
+                pins = mplace,
+                selected = currentSelected
         )
         var err : String? = null
         var bmp : Bitmap? = null
         runBlocking(Dispatchers.IO) {
             launch {
-                bmp = NetClient.getBitmapAsync(url, { err = it })
+                bmp = client.getBitmapAsync(url, { err = it })
             }
         }
         err?.let { Toast.makeText(ctx, err, Toast.LENGTH_LONG).show() }
