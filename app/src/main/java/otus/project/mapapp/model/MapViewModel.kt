@@ -14,14 +14,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import otus.project.mapapp.db.MarkerStore
-import otus.project.mapapp.loc.CheckLocation
-import otus.project.mapapp.net.NetClient
-import otus.project.mapapp.net.PlaceData
+import otus.project.common.*
+import otus.project.common.net.NetClient
+import otus.project.common.net.PlaceData
+import otus.project.feature.db.MarkerStore
+import otus.project.feature.loc.CheckLocation
 import javax.inject.Inject
 
-private fun styleToString(style : MapStyle) : String {
-    return when (style) {
+private fun MapStyle.toString() : String {
+    return when (this) {
         MapStyle.Main -> "main"
         MapStyle.Dark -> "dark"
         MapStyle.Light -> "simple"
@@ -36,7 +37,8 @@ class MapViewModel @Inject constructor (
     var check : CheckLocation
 ) : ViewModel() {
 
-    private val defaultCenter : Place = Place(55.75f,37.62f)
+    private val defaultCenter : Place =
+        Place(55.75f, 37.62f)
 
     // текущее состояние
     var currentViewMode : ViewMode = ViewMode.ModeView
@@ -45,9 +47,9 @@ class MapViewModel @Inject constructor (
     var currentSelected : Long = 0
     var currentPlace : Place = Place()
     // параметры запроса
-    val query : CurrentQuery = CurrentQuery(defaultCenter, 5000, "monument", 20, MapStyle.Main, 12)
+    val query : NetQuery = NetQuery(defaultCenter, 5000, "monument", 20, MapStyle.Main, 12)
     // настройки приложения
-    val state : AppSettings = AppSettings(true, false, true, false, false)
+    val state : AppSetup = AppSetup(true, false, true, false, false)
 
     private var lastId : Long = 0
     private fun newId() : Long = ++lastId
@@ -157,11 +159,11 @@ class MapViewModel @Inject constructor (
             val results = data.await()
             for (r in results) {
                 val item = Item(
-                        id = newId(),
-                        name = r.name ?: "",
-                        details = r.place_details ?: "",
-                        address = r.address ?: "",
-                        category = r.type ?: ""
+                    id = newId(),
+                    name = r.name ?: "",
+                    details = r.place_details ?: "",
+                    address = r.address ?: "",
+                    category = r.type ?: ""
                 )
                 val place = Place(r.pin[1], r.pin[0])
                 _items.add(item)
@@ -185,7 +187,7 @@ class MapViewModel @Inject constructor (
         val url = client.getImageUrl(
                 center = query.center,
                 zoom = query.zoom,
-                style = styleToString(query.style),
+                style = query.style.toString(),
                 width = width,
                 height = height,
                 pins = mplace,

@@ -1,8 +1,8 @@
-package otus.project.mapapp.net
+package otus.project.common.net
 
 import android.graphics.Bitmap
 import com.squareup.picasso.Picasso
-import otus.project.mapapp.model.Place
+import otus.project.common.Place
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
@@ -42,7 +42,7 @@ class NetClient @Inject constructor() {
     }
     private val service : DataService by lazy { retrofit.create(DataService::class.java) }
 
-    suspend fun getDataAsync(filter : String, count : Int, center : Place, radius : Int, onError : (String) -> Unit = {}) : List<PlaceData> {
+    suspend fun getDataAsync(filter : String, count : Int, center : otus.project.common.Place, radius : Int, onError : (String) -> Unit = {}) : List<PlaceData> {
         try {
             val response =
                 service.getPlaces("${center.latitude},${center.longitude}", "$radius", "$count", filter, fieldset, apikey)
@@ -56,7 +56,7 @@ class NetClient @Inject constructor() {
 
 //------
 
-    fun getImageUrl(center : Place, zoom : Int, style : String, width : Int, height : Int, pins : Map<Long, Place> = mapOf(), selected : Long = 0) : String {
+    fun getImageUrl(center : otus.project.common.Place, zoom : Int, style : String, width : Int, height : Int, pins : Map<Long, otus.project.common.Place> = mapOf(), selected : Long = 0) : String {
         var param = "?api_key=$apikey&latlon=${center.latitude},${center.longitude}&zoom=$zoom&style=$style&width=$width&height=$height&scale=2"
         if (!pins.isEmpty()) {
             var count = 0

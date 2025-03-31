@@ -9,7 +9,6 @@ dependencyResolutionManagement {
 }
 
 include ":app"
-//include ":core"
-//include ":feature:db"
-//include ":feature:loc"
-//include ":feature:net"
+include ':common'
+include ':feature:loc'
+include ':feature:db'

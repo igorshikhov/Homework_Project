@@ -32,11 +32,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import otus.project.common.*
 import otus.project.mapapp.R
-import otus.project.mapapp.model.MapStyle
 import otus.project.mapapp.model.MapViewModel
-import otus.project.mapapp.model.ViewMode
-import otus.project.mapapp.model.ViewType
 
 @Composable
 fun Select(name : String, selected : Boolean, onClick : () -> Unit, modifier : Modifier, isEnabled : Boolean = true) {

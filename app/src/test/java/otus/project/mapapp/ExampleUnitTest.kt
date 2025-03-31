@@ -1,57 +1,86 @@
 package otus.project.mapapp
 
-import android.os.Parcel
-import android.os.Parcelable
-import androidx.test.ext.junit.runners.AndroidJUnit4
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import android.content.Context
 import org.junit.Test
 import org.junit.Assert.*
-import otus.project.mapapp.model.Place
-import otus.project.mapapp.net.NetClient
-import otus.project.mapapp.net.PlaceData
+import org.junit.Before
+import org.junit.BeforeClass
+import org.junit.runner.RunWith
+import org.mockito.Mock
+import org.mockito.junit.MockitoJUnitRunner
+import org.mockito.kotlin.mock
+
+import otus.project.common.*
+import otus.project.common.net.NetClient
+import otus.project.common.net.PlaceData
+import otus.project.feature.db.DatabaseModule
+import otus.project.feature.db.MarkerStore
+import otus.project.mapapp.model.MapViewModel
 
 /**
  * Example local unit test, which will execute on the development machine (host).
  *
  * See [testing documentation](http://d.android.com/tools/testing).
  */
+@RunWith(MockitoJUnitRunner::class)
 class ExampleUnitTest {
 
+    @Mock
+    private lateinit var ctx : Context
+
+    @Before
+    fun init() { ctx = mock<Context>() }
+
     @Test
-    fun testNetClient() {
+    fun testViewModel() {
         val client = NetClient()
-        val center = Place(55.75f,37.62f)
-        val url = client.getImageUrl(center, 12, "main", 512, 512)
-        var err : String? = null
-        val bmp = client.getBitmapAsync(url) { err = it }
-        assertNull(err)
-        assertNotNull(bmp)
+        val store = MarkerStore(DatabaseModule.provideMarkerDao(DatabaseModule.provideMarkerDatabase(ctx)))
+        val check = otus.project.feature.loc.CheckLocation(ctx)
+        val viewModel = MapViewModel(ctx, client, store, check)
+        val item = Item(1, "объект 1", "данные 1", "адрес 1")
+        val place = Place(55.75f, 37.62f)
+        viewModel.addItem(item, place)
+        val ilist : List<Item> = viewModel.getItems()
+        assertEquals(1, ilist.size)
     }
 
     @Test
-    fun testNetClientData() {
+    fun testViewModelItem() {
         val client = NetClient()
-        val center = Place(55.75f,37.62f)
-        val filter = "monument"
-        var idata : PlaceData? = null
-        var err : String? = null
-        runBlocking(Dispatchers.IO) {
-            launch {
-                val data: Deferred<List<PlaceData>> = async {
-                    client.getDataAsync(filter, 1, center, 1000) { err = it }
-                }
-                val result = data.await()
-                if (result.isNotEmpty())
-                    idata = result.first()
-            }
-        }
-        assertNull(err)
-        assertNotNull(idata)
-        assertNotNull(idata?.name)
-        assertNotNull(idata?.type)
+        val store = MarkerStore(DatabaseModule.provideMarkerDao(DatabaseModule.provideMarkerDatabase(ctx)))
+        val check = otus.project.feature.loc.CheckLocation(ctx)
+        val viewModel = MapViewModel(ctx, client, store, check)
+        val item = Item(1, "объект 1", "данные 1", "адрес 1")
+        val place = Place(55.75f, 37.62f)
+        viewModel.addItem(item, place)
+        val found : Item = viewModel.getItem(1)
+        assertEquals(1, found.id)
+    }
+
+    @Test
+    fun testViewModelPlace() {
+        val client = NetClient()
+        val store = MarkerStore(DatabaseModule.provideMarkerDao(DatabaseModule.provideMarkerDatabase(ctx)))
+        val check = otus.project.feature.loc.CheckLocation(ctx)
+        val viewModel = MapViewModel(ctx, client, store, check)
+        val item = Item(1, "объект 1", "данные 1", "адрес 1")
+        val place = Place(55.75f, 37.62f)
+        viewModel.addItem(item, place)
+        val found : Place = viewModel.getPlace(1)
+        assertEquals(place.latitude, found.latitude)
+        assertEquals(place.longitude, found.longitude)
+    }
+
+    @Test
+    fun testViewModelFind() {
+        val client = NetClient()
+        val store = MarkerStore(DatabaseModule.provideMarkerDao(DatabaseModule.provideMarkerDatabase(ctx)))
+        val check = otus.project.feature.loc.CheckLocation(ctx)
+        val viewModel = MapViewModel(ctx, client, store, check)
+        val item = Item(1, "объект 1", "данные 1", "адрес 1")
+        val place = Place(55.75f, 37.62f)
+        viewModel.addItem(item, place)
+        val id = viewModel.findIdByPlace(place)
+        assertEquals(1, id)
     }
 }

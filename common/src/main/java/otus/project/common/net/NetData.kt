@@ -1,4 +1,4 @@
-package otus.project.mapapp.net
+package otus.project.common.net
 
 import com.google.gson.annotations.SerializedName
 
@@ -14,4 +14,3 @@ data class PlaceResponse(
     @SerializedName("request") val request : String?,
     @SerializedName("results") val results : List<PlaceData>
 )
-

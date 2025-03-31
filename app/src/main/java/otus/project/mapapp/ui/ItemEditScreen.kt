@@ -22,8 +22,8 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import otus.project.common.*
 import otus.project.mapapp.R
-import otus.project.mapapp.model.Item
 
 @Composable
 fun EditLine(name : String, data : String = "", modifier: Modifier = Modifier) : String {

@@ -1,16 +1,14 @@
 package otus.project.mapapp.ui
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.composable
-import otus.project.mapapp.R
-import otus.project.mapapp.model.Item
+import otus.project.common.Item
 import otus.project.mapapp.model.MapViewModel
-import otus.project.mapapp.model.ViewMode
-import otus.project.mapapp.model.ViewType
+import otus.project.common.ViewMode
+import otus.project.common.ViewType
 
 // Screen Labels
 data object Preface  { val id = "Preface" }

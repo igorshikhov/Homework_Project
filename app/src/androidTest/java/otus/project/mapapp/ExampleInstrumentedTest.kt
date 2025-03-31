@@ -13,14 +13,12 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 import org.junit.Assert.*
-import otus.project.mapapp.db.MarkerStore
-import otus.project.mapapp.db.di.DatabaseModule
-import otus.project.mapapp.loc.CheckLocation
-import otus.project.mapapp.model.Item
+import otus.project.common.*
+import otus.project.common.net.NetClient
+import otus.project.common.net.PlaceData
+import otus.project.feature.db.MarkerStore
+import otus.project.feature.db.DatabaseModule
 import otus.project.mapapp.model.MapViewModel
-import otus.project.mapapp.model.Place
-import otus.project.mapapp.net.NetClient
-import otus.project.mapapp.net.PlaceData
 
 /**
  * Instrumented test, which will execute on an Android device.
@@ -37,29 +35,66 @@ class ExampleInstrumentedTest {
     }
 
     @Test
-    fun testCheckLocation() {
+    fun testViewModel() {
         val ctx = InstrumentationRegistry.getInstrumentation().context
-        val check = CheckLocation(ctx)
-        assertEquals(true, check.isEnabled())
+        val client = NetClient()
+        val store = MarkerStore(DatabaseModule.provideMarkerDao(DatabaseModule.provideMarkerDatabase(ctx)))
+        val check = otus.project.feature.loc.CheckLocation(ctx)
+        val viewModel = MapViewModel(ctx, client, store, check)
+        val item = Item(1, "объект 1", "данные 1", "адрес 1")
+        val place = Place(55.75f, 37.62f)
+        viewModel.addItem(item, place)
+        val ilist : List<Item> = viewModel.getItems()
+        assertEquals(1, ilist.size)
     }
 
     @Test
-    fun testGetLocation() {
+    fun testViewModelItem() {
         val ctx = InstrumentationRegistry.getInstrumentation().context
-        val check = CheckLocation(ctx)
-        assertEquals(true, check.isEnabled())
-        if (check.isLocationFound(false)) {
-            val place: Place? = check.getLocation()
-            assertNotNull(place)
-            assertNotSame(0f, place?.latitude ?: 0f)
-            assertNotSame(0f, place?.longitude ?: 0f)
-        }
+        val client = NetClient()
+        val store = MarkerStore(DatabaseModule.provideMarkerDao(DatabaseModule.provideMarkerDatabase(ctx)))
+        val check = otus.project.feature.loc.CheckLocation(ctx)
+        val viewModel = MapViewModel(ctx, client, store, check)
+        val item = Item(1, "объект 1", "данные 1", "адрес 1")
+        val place = Place(55.75f, 37.62f)
+        viewModel.addItem(item, place)
+        val found : Item = viewModel.getItem(1)
+        assertEquals(1, found.id)
+    }
+
+    @Test
+    fun testViewModelPlace() {
+        val ctx = InstrumentationRegistry.getInstrumentation().context
+        val client = NetClient()
+        val store = MarkerStore(DatabaseModule.provideMarkerDao(DatabaseModule.provideMarkerDatabase(ctx)))
+        val check = otus.project.feature.loc.CheckLocation(ctx)
+        val viewModel = MapViewModel(ctx, client, store, check)
+        val item = Item(1, "объект 1", "данные 1", "адрес 1")
+        val place = Place(55.75f, 37.62f)
+        viewModel.addItem(item, place)
+        val found : Place = viewModel.getPlace(1)
+        assertEquals(place.latitude, found.latitude)
+        assertEquals(place.longitude, found.longitude)
+    }
+
+    @Test
+    fun testViewModelFind() {
+        val ctx = InstrumentationRegistry.getInstrumentation().context
+        val client = NetClient()
+        val store = MarkerStore(DatabaseModule.provideMarkerDao(DatabaseModule.provideMarkerDatabase(ctx)))
+        val check = otus.project.feature.loc.CheckLocation(ctx)
+        val viewModel = MapViewModel(ctx, client, store, check)
+        val item = Item(1, "объект 1", "данные 1", "адрес 1")
+        val place = Place(55.75f, 37.62f)
+        viewModel.addItem(item, place)
+        val id = viewModel.findIdByPlace(place)
+        assertEquals(1, id)
     }
 
     @Test
     fun testNetClient() {
         val client = NetClient()
-        val center = Place(55.75f,37.62f)
+        val center = Place(55.75f, 37.62f)
         val url = client.getImageUrl(center, 12, "main", 512, 512)
         var err : String? = null
         val bmp = client.getBitmapAsync(url) { err = it }
@@ -70,7 +105,7 @@ class ExampleInstrumentedTest {
     @Test
     fun testNetClientData() {
         val client = NetClient()
-        val center = Place(55.75f,37.62f)
+        val center = Place(55.75f, 37.62f)
         val filter = "monument"
         var idata : PlaceData? = null
         var err : String? = null
@@ -88,49 +123,5 @@ class ExampleInstrumentedTest {
         assertNotNull(idata)
         assertNotNull(idata?.name)
         assertNotNull(idata?.type)
-    }
-
-    @Test
-    fun testViewModel() {
-        val ctx = InstrumentationRegistry.getInstrumentation().context
-        val client = NetClient()
-        val store = MarkerStore(DatabaseModule.provideMarkerDao(DatabaseModule.provideMarkerDatabase(ctx)))
-        val check = CheckLocation(ctx)
-        val viewModel = MapViewModel(ctx, client, store, check)
-        val item = Item(1, "объект 1", "данные 1", "адрес 1")
-        val place = Place(55.75f,37.62f)
-        viewModel.addItem(item, place)
-        val ilist : List<Item> = viewModel.getItems()
-        assertEquals(1, ilist.size)
-    }
-
-    @Test
-    fun testViewModelState() {
-        val ctx = InstrumentationRegistry.getInstrumentation().context
-        val client = NetClient()
-        val store = MarkerStore(DatabaseModule.provideMarkerDao(DatabaseModule.provideMarkerDatabase(ctx)))
-        val check = CheckLocation(ctx)
-        val viewModel = MapViewModel(ctx, client, store, check)
-        val place = viewModel.query.center
-        assertNotSame(0f, place.latitude)
-        assertNotSame(0f, place.longitude)
-    }
-
-    @Test
-    fun testDataStore() {
-        val ctx = InstrumentationRegistry.getInstrumentation().context
-        val store = MarkerStore(DatabaseModule.provideMarkerDao(DatabaseModule.provideMarkerDatabase(ctx)))
-        val item = Item(1, "объект 1", "данные 1", "адрес 1")
-        val place = Place(55.75f,37.62f)
-        val ilist : MutableList<Item> = mutableListOf()
-        var err : String? = null
-        runBlocking {
-            CoroutineScope(Dispatchers.IO).launch {
-                store.addItem(item, place) { err = it }
-                ilist.addAll(store.getItems { err = it })
-            }
-        }
-        assertNull(err)
-        assertEquals(1, ilist.size)
     }
 }

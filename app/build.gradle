@@ -105,14 +105,16 @@ dependencies {
     implementation 'com.squareup.picasso:picasso:2.71828'
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 
-    testImplementation 'junit:junit:4.+'
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.mockito:mockito-core:4.8.1'
+    testImplementation 'org.mockito:mockito-android:4.8.1'
+    testImplementation 'org.mockito.kotlin:mockito-kotlin:3.2.0'
     androidTestImplementation "androidx.compose.ui:ui-test-junit4-android:$compose_version"
     androidTestImplementation "androidx.test.espresso:espresso-core:3.3.0"
     androidTestImplementation "androidx.test.ext:junit:$test_version"
     androidTestImplementation "androidx.test.ext:junit-ktx:$test_version"
 
-//    implementation project(":core")
-//    implementation project(":feature:db")
-//    implementation project(":feature:loc")
-//    implementation project(":feature:net")
+    implementation project(":common")
+    implementation project(":feature:db")
+    implementation project(':feature:loc')
 }

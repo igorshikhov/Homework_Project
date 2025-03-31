@@ -1,29 +1,31 @@
 package otus.project.mapapp.map
 
-import otus.project.mapapp.model.Place
+import otus.project.common.Place
 import ru.mail.maps.data.LatLon
 import ru.mail.maps.data.MapLocation
 import ru.mail.maps.data.ScreenLocation
 import ru.mail.maps.sdk.views.MapView
 
 class MapAdapter(val mapView: MapView) {
-    private var clickMarker : (id : Long, place : Place) -> Unit = { _, _ -> }
-    private var clickEmpty : (place : Place) -> Unit = { _ -> }
+    private var clickMarker : (id : Long, place : otus.project.common.Place) -> Unit = { _, _ -> }
+    private var clickEmpty : (place : otus.project.common.Place) -> Unit = { _ -> }
 
     private fun onClickMarker(ids : String, loc : MapLocation) {
         // convert parameters and call clickMarker()
         val id : Long = ids.toLong()
-        val place = Place(loc.latitude?.toFloat() ?: 0f, loc.longitude?.toFloat() ?: 0f)
+        val place =
+            otus.project.common.Place(loc.latitude?.toFloat() ?: 0f, loc.longitude?.toFloat() ?: 0f)
         clickMarker(id, place)
     }
 
     private fun onClickEmpty(loc : MapLocation) {
         // convert parameters and call clickEmpty()
-        val place  = Place(loc.latitude?.toFloat() ?: 0f, loc.longitude?.toFloat() ?: 0f)
+        val place  =
+            otus.project.common.Place(loc.latitude?.toFloat() ?: 0f, loc.longitude?.toFloat() ?: 0f)
         clickEmpty(place)
     }
 
-    fun setListeners(onMarker : (id : Long, place : Place) -> Unit, onEmpty : (place : Place) -> Unit) {
+    fun setListeners(onMarker : (id : Long, place : otus.project.common.Place) -> Unit, onEmpty : (place : otus.project.common.Place) -> Unit) {
         clickMarker = onMarker
         clickEmpty = onEmpty
         mapView.getMapAsync { map ->
@@ -32,12 +34,12 @@ class MapAdapter(val mapView: MapView) {
         }
     }
 
-    fun locate(place : Place) {
+    fun locate(place : otus.project.common.Place) {
         val loc = LatLon(place.latitude.toDouble(), place.longitude.toDouble())
         mapView.getMapAsync { map -> map.flyTo(loc, true) }
     }
 
-    fun addMark(id : Long, place : Place) {
+    fun addMark(id : Long, place : otus.project.common.Place) {
         val ids = id.toString()
         val loc = MapLocation(place.latitude.toDouble(), place.longitude.toDouble())
         //val mark = MarkerEntity(ids, loc, ImageSrcValue())

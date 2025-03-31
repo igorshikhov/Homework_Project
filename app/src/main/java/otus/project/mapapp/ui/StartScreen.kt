@@ -21,9 +21,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
+import otus.project.common.*
 import otus.project.mapapp.R
 import otus.project.mapapp.model.MapViewModel
-import otus.project.mapapp.model.ViewType
 
 @Composable
 fun StartScreen(model : MapViewModel, back : () -> Unit, turnView : (type : ViewType) -> Unit, turnMode : () -> Unit) {

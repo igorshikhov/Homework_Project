@@ -11,7 +11,7 @@ import androidx.compose.ui.test.performTextInput
 import org.junit.Assert.*
 import org.junit.Rule
 import org.junit.Test
-import otus.project.mapapp.model.MapStyle
+import otus.project.common.MapStyle
 import otus.project.mapapp.model.MapViewModel
 
 class ComposeInstrumentedTest {
@@ -28,14 +28,14 @@ class ComposeInstrumentedTest {
 
     @Test
     fun goMapScreenTest() {
-        composeTestRule.onNodeWithText("Карта").performClick()
+        composeTestRule.onNodeWithText("Карта").assertExists().performClick()
         composeTestRule.waitUntil(5000, { true })
         composeTestRule.onNodeWithTag("ViewMap-Image").assertExists()
     }
 
     @Test
     fun goListScreenTest() {
-        composeTestRule.onNodeWithText("Список").performClick()
+        composeTestRule.onNodeWithText("Список").assertExists().performClick()
         composeTestRule.waitUntil(5000, { true })
         composeTestRule.onNodeWithTag("ViewList-LazyColumn").assertExists()
         composeTestRule.onNodeWithTag("ItemLine-1").assertExists()
@@ -43,7 +43,7 @@ class ComposeInstrumentedTest {
 
     @Test
     fun goSettingsScreenTest() {
-        composeTestRule.onNodeWithText("Настройки").performClick()
+        composeTestRule.onNodeWithText("Настройки").assertExists().performClick()
         composeTestRule.waitUntil(5000, { true })
         composeTestRule.onNodeWithText(" < ").assertExists().assertHasClickAction()
         composeTestRule.onNodeWithText("Сохранить").assertExists().assertHasClickAction()
@@ -54,31 +54,31 @@ class ComposeInstrumentedTest {
     @Test
     fun doStyleSelectTest() {
         val model : MapViewModel by composeTestRule.activity.viewModels()
-        composeTestRule.onNodeWithText("Настройки").performClick()
+        composeTestRule.onNodeWithText("Настройки").assertExists().performClick()
         composeTestRule.waitUntil(5000, { true })
-        composeTestRule.onNodeWithText("Dark").performClick()
-        composeTestRule.onNodeWithText("Сохранить").performClick()
+        composeTestRule.onNodeWithText("Dark").assertExists().performClick()
+        composeTestRule.onNodeWithText("Сохранить").assertExists().performClick()
         assertEquals(MapStyle.Dark, model.query.style)
     }
 
     @Test
     fun doFilterInputTest() {
         val model : MapViewModel by composeTestRule.activity.viewModels()
-        composeTestRule.onNodeWithText("Настройки").performClick()
+        composeTestRule.onNodeWithText("Настройки").assertExists().performClick()
         composeTestRule.waitUntil(5000, { true })
         composeTestRule.onNodeWithTag("Settings-Filter").assertExists().performTextClearance()
         composeTestRule.onNodeWithTag("Settings-Filter").performTextInput("памятник")
-        composeTestRule.onNodeWithText("Сохранить").performClick()
+        composeTestRule.onNodeWithText("Сохранить").assertExists().performClick()
         assertEquals("памятник", model.query.filter)
     }
 
     @Test
     fun doLimitInputTest() {
         val model : MapViewModel by composeTestRule.activity.viewModels()
-        composeTestRule.onNodeWithText("Настройки").performClick()
+        composeTestRule.onNodeWithText("Настройки").assertExists().performClick()
         composeTestRule.waitUntil(5000, { true })
         composeTestRule.onNodeWithTag("Settings-Limit").assertExists().performTextClearance()
-        composeTestRule.onNodeWithText("Сохранить").performClick()
+        composeTestRule.onNodeWithText("Сохранить").assertExists().performClick()
         assertEquals(0, model.query.limit)
     }
 }

@@ -1,9 +1,7 @@
-package otus.project.mapapp.loc
+package otus.project.feature.loc
 
-import android.Manifest
 import android.content.Context
 import android.content.Context.LOCATION_SERVICE
-import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
@@ -12,10 +10,9 @@ import android.location.LocationManager.NETWORK_PROVIDER
 import android.os.Build
 import android.widget.Toast
 import androidx.annotation.RequiresApi
-import androidx.core.app.ActivityCompat
 import dagger.hilt.android.qualifiers.ApplicationContext
-import otus.project.mapapp.model.Place
 import javax.inject.Inject
+import otus.project.common.Place
 
 fun Location.toPlace() : Place = Place(latitude.toFloat(), longitude.toFloat())
 
@@ -37,7 +34,7 @@ class CheckLocation @Inject constructor(@ApplicationContext private val ctx : Co
             || locManager.isProviderEnabled(NETWORK_PROVIDER)
     }
 
-    fun getLocation() : Place? = currentLoc?.toPlace()
+    fun getLocation() : otus.project.common.Place? = currentLoc?.toPlace()
 
     fun isLocationFound(showErr : Boolean = true) : Boolean {
         try {

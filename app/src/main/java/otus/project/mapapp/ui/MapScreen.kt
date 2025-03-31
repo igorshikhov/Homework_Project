@@ -26,10 +26,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import otus.project.common.*
 import otus.project.mapapp.R
 import otus.project.mapapp.model.MapViewModel
-import otus.project.mapapp.model.Place
-import otus.project.mapapp.model.ViewType
+
 
 private const val iWidth = 576
 private const val iHeight = 1000
@@ -39,8 +39,9 @@ fun mapImage(model : MapViewModel) : ImageBitmap? {
 }
 
 @Composable
-fun MapScreen(model : MapViewModel, back : () -> Unit, toList : () -> Unit, toSetup : () -> Unit, onClick : (Place) -> Unit = {}) {
+fun MapScreen(model : MapViewModel, back : () -> Unit, toList : () -> Unit, toSetup : () -> Unit, onClick : (otus.project.common.Place) -> Unit = {}) {
 /*
+    // настройки для работы с MapView
     val options = MapStartOptions(
         center = LatLon(center.latitude.toDouble(), center.longitude.toDouble()),
         zoomLevel = MapViewModel.currentZoom.toFloat(),
